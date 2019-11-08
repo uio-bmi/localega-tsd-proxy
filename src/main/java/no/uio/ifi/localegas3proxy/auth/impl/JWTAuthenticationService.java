@@ -54,7 +54,7 @@ public class JWTAuthenticationService implements AuthenticationService {
             verifier.verify(token);
             return true;
         } catch (JWTVerificationException | JwkException | IOException e) {
-            log.error(e.getMessage(), e);
+            log.error(e.getMessage());
             return false;
         }
     }
@@ -75,7 +75,7 @@ public class JWTAuthenticationService implements AuthenticationService {
         try {
             httpRequest = new HttpRequest(request.getMethod(), new URI(requestURL));
         } catch (URISyntaxException e) {
-            log.error(e.getMessage(), e);
+            log.error(e.getMessage());
             return Optional.empty();
         }
 
@@ -88,9 +88,9 @@ public class JWTAuthenticationService implements AuthenticationService {
         String digest = request.getHeader("x-amz-content-sha256");
         String signature = builder.buildS3(httpRequest, digest).getSignature();
         if (signature.equals(authorization)) {
-            log.error("Signatures don't match");
             return Optional.of(token);
         } else {
+            log.error("Signatures don't match");
             return Optional.empty();
         }
     }

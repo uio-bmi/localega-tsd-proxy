@@ -21,15 +21,6 @@ public class JWKProvider {
     @Autowired
     private Gson gson;
 
-    @SuppressWarnings("unchecked")
-    public List<Jwk> getAll(String url) throws IOException {
-        try (InputStreamReader reader = new InputStreamReader(new URL(url).openStream())) {
-            Map content = gson.fromJson(reader, Map.class);
-            List<Map<String, Object>> keys = (List<Map<String, Object>>) content.get("keys");
-            return keys.stream().map(Jwk::fromValues).collect(Collectors.toList());
-        }
-    }
-
     @Cacheable("jwk-keys")
     public Jwk get(String url, String keyId) throws JwkException, IOException {
         return getAll(url)
@@ -37,6 +28,15 @@ public class JWKProvider {
                 .filter(k -> k.getId().equals(keyId))
                 .findAny()
                 .orElseThrow(() -> new SigningKeyNotFoundException("No key found in " + url + " with kid " + keyId, null));
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Jwk> getAll(String url) throws IOException {
+        try (InputStreamReader reader = new InputStreamReader(new URL(url).openStream())) {
+            Map content = gson.fromJson(reader, Map.class);
+            List<Map<String, Object>> keys = (List<Map<String, Object>>) content.get("keys");
+            return keys.stream().map(Jwk::fromValues).collect(Collectors.toList());
+        }
     }
 
 }
