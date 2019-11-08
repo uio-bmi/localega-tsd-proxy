@@ -5,7 +5,9 @@ import java.util.Collection;
 
 public interface BackendStorage {
 
-    Collection<String> list(String username);
+    Collection<String> listAllMyBuckets(String username);
+
+    Collection<String> listBucket(String username, String path);
 
     OutputStream getOutputStream(String username, String filename);
 

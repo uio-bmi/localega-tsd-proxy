@@ -9,6 +9,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.localegas3proxy.auth.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import uk.co.lucasweb.aws.v4.signer.HttpRequest;
@@ -32,10 +33,17 @@ public class JWTAuthenticationService implements AuthenticationService {
     @Autowired
     private JWKProvider jwkProvider;
 
+    @Value("${default_jku}")
+    private String defaultJKU;
+
     @Override
     public void authenticate(HttpServletRequest request) {
         try {
-            request.setAttribute("JWT_TOKEN", validateToken(getToken(request)));
+            String token = validateToken(getToken(request));
+            request.setAttribute("JWT_TOKEN", token);
+            DecodedJWT decodedToken = JWT.decode(token);
+            String subject = decodedToken.getSubject();
+            request.setAttribute("JWT_SUBJECT", subject);
         } catch (Exception e) {
             throw new SecurityException(e.getMessage());
         }
@@ -44,6 +52,9 @@ public class JWTAuthenticationService implements AuthenticationService {
     private String validateToken(String token) throws IOException, JwkException {
         DecodedJWT decodedToken = JWT.decode(token);
         String jku = decodedToken.getHeaderClaim("jku").asString();
+        if (StringUtils.isEmpty(jku)) {
+            jku = defaultJKU;
+        }
         String keyId = decodedToken.getKeyId();
         Jwk jwk = jwkProvider.get(jku, keyId);
         JWTVerifier verifier = JWT.require(Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null)).build();
