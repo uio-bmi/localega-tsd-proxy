@@ -4,6 +4,6 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface AuthenticationService {
 
-    String authenticate(HttpServletRequest request) throws SecurityException;
+    void authenticate(HttpServletRequest request) throws SecurityException;
 
 }

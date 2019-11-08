@@ -33,9 +33,9 @@ public class JWTAuthenticationService implements AuthenticationService {
     private JWKProvider jwkProvider;
 
     @Override
-    public String authenticate(HttpServletRequest request) {
+    public void authenticate(HttpServletRequest request) {
         try {
-            return validateToken(getToken(request));
+            request.setAttribute("JWT_TOKEN", validateToken(getToken(request)));
         } catch (Exception e) {
             throw new SecurityException(e.getMessage());
         }
