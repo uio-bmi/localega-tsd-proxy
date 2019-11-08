@@ -5,7 +5,6 @@ import com.auth0.jwk.JwkException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.localegas3proxy.auth.AuthenticationService;
@@ -21,7 +20,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,49 +33,39 @@ public class JWTAuthenticationService implements AuthenticationService {
     private JWKProvider jwkProvider;
 
     @Override
-    public boolean authenticate(HttpServletRequest request) {
-        Optional<String> tokenOptional = getToken(request);
-        if (tokenOptional.isEmpty()) {
-            return false;
-        }
-        String token = tokenOptional.get();
-        return validateToken(token);
-    }
-
-    private boolean validateToken(String token) {
+    public String authenticate(HttpServletRequest request) {
         try {
-            DecodedJWT decodedToken = JWT.decode(token);
-            String jku = decodedToken.getHeaderClaim("jku").asString();
-            String keyId = decodedToken.getKeyId();
-            Jwk jwk = jwkProvider.get(jku, keyId);
-            JWTVerifier verifier = JWT.require(Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null)).build();
-            verifier.verify(token);
-            return true;
-        } catch (JWTVerificationException | JwkException | IOException e) {
-            log.error(e.getMessage());
-            return false;
+            return validateToken(getToken(request));
+        } catch (Exception e) {
+            throw new SecurityException(e.getMessage());
         }
     }
 
-    private Optional<String> getToken(HttpServletRequest request) {
+    private String validateToken(String token) throws IOException, JwkException {
+        DecodedJWT decodedToken = JWT.decode(token);
+        String jku = decodedToken.getHeaderClaim("jku").asString();
+        String keyId = decodedToken.getKeyId();
+        Jwk jwk = jwkProvider.get(jku, keyId);
+        JWTVerifier verifier = JWT.require(Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null)).build();
+        verifier.verify(token);
+        return token;
+    }
+
+    private String getToken(HttpServletRequest request) throws URISyntaxException {
         String authorization = request.getHeader("authorization");
+        if (StringUtils.isEmpty(authorization)) {
+            throw new SecurityException("Authorization header missing");
+        }
         Matcher matcher = AWS_AUTH4_PATTERN.matcher(authorization);
         if (!matcher.matches()) {
-            log.error("Authorization header missing or doesn't match the AWS Signature V4 pattern");
-            return Optional.empty();
+            throw new SecurityException("Authorization header doesn't match the AWS Signature V4 pattern");
         }
         String requestURL = request.getRequestURL().toString();
         String queryString = request.getQueryString();
         if (!StringUtils.isEmpty(queryString)) {
             requestURL += "?" + queryString;
         }
-        HttpRequest httpRequest;
-        try {
-            httpRequest = new HttpRequest(request.getMethod(), new URI(requestURL));
-        } catch (URISyntaxException e) {
-            log.error(e.getMessage());
-            return Optional.empty();
-        }
+        HttpRequest httpRequest = new HttpRequest(request.getMethod(), new URI(requestURL));
 
         String token = matcher.group(1);
         Signer.Builder builder = Signer.builder().awsCredentials(new AwsCredentials(token, token));
@@ -88,10 +76,9 @@ public class JWTAuthenticationService implements AuthenticationService {
         String digest = request.getHeader("x-amz-content-sha256");
         String signature = builder.buildS3(httpRequest, digest).getSignature();
         if (signature.equals(authorization)) {
-            return Optional.of(token);
+            return token;
         } else {
-            log.error("Signatures don't match");
-            return Optional.empty();
+            throw new SecurityException("Signatures don't match");
         }
     }
 
