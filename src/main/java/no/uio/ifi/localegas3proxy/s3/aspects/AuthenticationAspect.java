@@ -45,6 +45,7 @@ public class AuthenticationAspect {
                 requestedResource += "?" + queryString;
             }
             UUID requestId = UUID.randomUUID();
+            log.error("Request ID: {}, Error: {}", requestId, e.getMessage());
             ErrorResponse errorResponse = new ErrorResponse(String.valueOf(HttpStatus.UNAUTHORIZED.value()), e.getMessage(), requestedResource, requestId.toString());
             return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
         }
