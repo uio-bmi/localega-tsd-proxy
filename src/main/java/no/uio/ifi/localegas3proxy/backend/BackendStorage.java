@@ -1,13 +1,13 @@
 package no.uio.ifi.localegas3proxy.backend;
 
+import no.uio.ifi.localegas3proxy.backend.model.BackendFile;
+
 import java.io.OutputStream;
 import java.util.Collection;
 
 public interface BackendStorage {
 
-    Collection<String> listAllMyBuckets(String username);
-
-    Collection<String> listBucket(String username, String path);
+    Collection<BackendFile> list(String username);
 
     OutputStream getOutputStream(String username, String filename);
 

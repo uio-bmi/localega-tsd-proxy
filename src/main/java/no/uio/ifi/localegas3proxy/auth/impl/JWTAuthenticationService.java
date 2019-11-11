@@ -12,14 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import uk.co.lucasweb.aws.v4.signer.HttpRequest;
-import uk.co.lucasweb.aws.v4.signer.Signer;
-import uk.co.lucasweb.aws.v4.signer.credentials.AwsCredentials;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +23,7 @@ import java.util.regex.Pattern;
 @Service
 public class JWTAuthenticationService implements AuthenticationService {
 
+    private static final Pattern AWS_AUTH_PATTERN = Pattern.compile("AWS ([^:]+):(.+)");
     private static final Pattern AWS_AUTH4_PATTERN = Pattern.compile("AWS4-HMAC-SHA256 Credential=([^/]+)/([^/]+)/([^/]+)/s3/aws4_request, SignedHeaders=([^,]+), Signature=(.+)");
 
     @Autowired
@@ -62,35 +58,20 @@ public class JWTAuthenticationService implements AuthenticationService {
         return token;
     }
 
-    private String getToken(HttpServletRequest request) throws URISyntaxException {
+    private String getToken(HttpServletRequest request) {
         String authorization = request.getHeader("authorization");
         if (StringUtils.isEmpty(authorization)) {
             throw new SecurityException("Authorization header missing");
         }
         Matcher matcher = AWS_AUTH4_PATTERN.matcher(authorization);
-        if (!matcher.matches()) {
-            throw new SecurityException("Authorization header doesn't match the AWS Signature V4 pattern");
+        if (matcher.matches()) {
+            return matcher.group(1);
         }
-        String requestURL = request.getRequestURL().toString();
-        String queryString = request.getQueryString();
-        if (!StringUtils.isEmpty(queryString)) {
-            requestURL += "?" + queryString;
+        matcher = AWS_AUTH_PATTERN.matcher(authorization);
+        if (matcher.matches()) {
+            return matcher.group(1);
         }
-        HttpRequest httpRequest = new HttpRequest(request.getMethod(), new URI(requestURL));
-
-        String token = matcher.group(1);
-        Signer.Builder builder = Signer.builder().awsCredentials(new AwsCredentials(token, token));
-        String[] headers = matcher.group(4).split(";");
-        for (String header : headers) {
-            builder = builder.header(header, request.getHeader(header));
-        }
-        String digest = request.getHeader("x-amz-content-sha256");
-        String signature = builder.buildS3(httpRequest, digest).getSignature();
-        if (signature.equals(authorization)) {
-            return token;
-        } else {
-            throw new SecurityException("Signatures don't match");
-        }
+        throw new SecurityException("Authorization header doesn't match the AWS Signature V4 pattern");
     }
 
 }
