@@ -23,6 +23,9 @@ import java.util.regex.Pattern;
 @Service
 public class JWTAuthenticationService implements AuthenticationService {
 
+    public static final String JWT_TOKEN = "JWT_TOKEN";
+    public static final String JWT_SUBJECT = "JWT_SUBJECT";
+
     private static final Pattern AWS_AUTH_PATTERN = Pattern.compile("AWS ([^:]+):(.+)");
     private static final Pattern AWS_AUTH4_PATTERN = Pattern.compile("AWS4-HMAC-SHA256 Credential=([^/]+)/([^/]+)/([^/]+)/s3/aws4_request, SignedHeaders=([^,]+), Signature=(.+)");
 
@@ -36,10 +39,10 @@ public class JWTAuthenticationService implements AuthenticationService {
     public void authenticate(HttpServletRequest request) {
         try {
             String token = validateToken(getToken(request));
-            request.setAttribute("JWT_TOKEN", token);
+            request.setAttribute(JWT_TOKEN, token);
             DecodedJWT decodedToken = JWT.decode(token);
             String subject = decodedToken.getSubject();
-            request.setAttribute("JWT_SUBJECT", subject);
+            request.setAttribute(JWT_SUBJECT, subject);
         } catch (Exception e) {
             throw new SecurityException(e.getMessage());
         }

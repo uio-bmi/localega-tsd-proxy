@@ -17,8 +17,8 @@ import java.time.Instant;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ContentsEntry {
 
-    private static final String STORAGE_CLASS_STANDARD = "STANDARD";
-    private static final String STORAGE_CLASS_REDUCED_REDUNDANCY = "REDUCED_REDUNDANCY";
+    public static final String STORAGE_CLASS_STANDARD = "STANDARD";
+    public static final String STORAGE_CLASS_REDUCED_REDUNDANCY = "REDUCED_REDUNDANCY";
 
     @XmlElement(name = "Key")
     private String key;
@@ -34,6 +34,6 @@ public class ContentsEntry {
     private Integer size;
 
     @XmlElement(name = "StorageClass")
-    private String storageClass = STORAGE_CLASS_STANDARD;
+    private String storageClass;
 
 }

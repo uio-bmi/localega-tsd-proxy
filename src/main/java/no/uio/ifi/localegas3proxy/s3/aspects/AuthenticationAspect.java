@@ -27,7 +27,7 @@ public class AuthenticationAspect {
     @Autowired
     private AuthenticationService authenticationService;
 
-    @Around("@annotation(org.springframework.web.bind.annotation.RequestMapping) && args(javax.servlet.http.HttpServletRequest)")
+    @Around("@annotation(org.springframework.web.bind.annotation.RequestMapping) && args(javax.servlet.http.HttpServletRequest, ..)")
     public Object authenticate(ProceedingJoinPoint joinPoint) throws Throwable {
         HttpClientErrorException unauthorizedException = HttpClientErrorException.Unauthorized.create(HttpStatus.UNAUTHORIZED, "Unauthorized", HttpHeaders.EMPTY, null, Charset.defaultCharset());
         HttpServletRequest request = Arrays.stream(joinPoint.getArgs())
