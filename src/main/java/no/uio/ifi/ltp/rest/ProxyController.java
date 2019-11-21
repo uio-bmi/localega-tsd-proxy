@@ -20,7 +20,7 @@ public class ProxyController {
     @Autowired
     private TSDFileAPIClient tsdFileAPIClient;
 
-    @PutMapping("/upload/${fileName}")
+    @PutMapping("/upload/{fileName}")
     @ResponseBody
     public ResponseEntity upload(HttpServletRequest request,
                                  @PathVariable("fileName") String fileName) throws IOException {

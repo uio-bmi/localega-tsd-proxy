@@ -1,0 +1,2 @@
+elixir-aai.default-jku: ${DEFAULT_JKU:https://login.elixir-czech.org/oidc/jwk}
+tsd.access-key: ${TSD_ACCESS_KEY:}
