@@ -1,4 +1,4 @@
-package no.uio.ifi.localegas3proxy.auth;
+package no.uio.ifi.ltp.auth;
 
 import javax.servlet.http.HttpServletRequest;
 

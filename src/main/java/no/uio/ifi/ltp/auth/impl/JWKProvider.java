@@ -1,4 +1,4 @@
-package no.uio.ifi.localegas3proxy.auth.impl;
+package no.uio.ifi.ltp.auth.impl;
 
 import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkException;

@@ -1,8 +1,7 @@
-package no.uio.ifi.localegas3proxy.s3.aspects;
+package no.uio.ifi.ltp.aspects;
 
 import lombok.extern.slf4j.Slf4j;
-import no.uio.ifi.localegas3proxy.auth.AuthenticationService;
-import no.uio.ifi.localegas3proxy.s3.dto.ErrorResponse;
+import no.uio.ifi.ltp.auth.AuthenticationService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,15 +37,9 @@ public class AuthenticationAspect {
             authenticationService.authenticate(request);
             return joinPoint.proceed();
         } catch (SecurityException e) {
-            String requestedResource = request.getRequestURI();
-            String queryString = request.getQueryString();
-            if (!StringUtils.isEmpty(queryString)) {
-                requestedResource += "?" + queryString;
-            }
             UUID requestId = UUID.randomUUID();
             log.error("Request ID: {}, Error: {}", requestId, e.getMessage());
-            ErrorResponse errorResponse = new ErrorResponse(String.valueOf(HttpStatus.UNAUTHORIZED.value()), e.getMessage(), requestedResource, requestId.toString());
-            return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 

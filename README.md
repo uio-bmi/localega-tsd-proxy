@@ -1,1 +1,1 @@
-# LocalEGA-S3-proxy
+# LocalEGA-TSD-proxy

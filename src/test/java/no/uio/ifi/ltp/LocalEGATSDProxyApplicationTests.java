@@ -1,10 +1,10 @@
-package no.uio.ifi.localegas3proxy;
+package no.uio.ifi.ltp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class LocalEGAS3ProxyApplicationTests {
+class LocalEGATSDProxyApplicationTests {
 
     @Test
     void contextLoads() {

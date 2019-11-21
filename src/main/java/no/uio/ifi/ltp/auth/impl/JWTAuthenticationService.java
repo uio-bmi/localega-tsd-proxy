@@ -1,4 +1,4 @@
-package no.uio.ifi.localegas3proxy.auth.impl;
+package no.uio.ifi.ltp.auth.impl;
 
 import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkException;
@@ -7,7 +7,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
-import no.uio.ifi.localegas3proxy.auth.AuthenticationService;
+import no.uio.ifi.ltp.auth.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,33 +16,29 @@ import org.springframework.util.StringUtils;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.interfaces.RSAPublicKey;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Slf4j
 @Service
 public class JWTAuthenticationService implements AuthenticationService {
 
-    public static final String JWT_TOKEN = "JWT_TOKEN";
-    public static final String JWT_SUBJECT = "JWT_SUBJECT";
-
-    private static final Pattern AWS_AUTH_PATTERN = Pattern.compile("AWS ([^:]+):(.+)");
-    private static final Pattern AWS_AUTH4_PATTERN = Pattern.compile("AWS4-HMAC-SHA256 Credential=([^/]+)/([^/]+)/([^/]+)/s3/aws4_request, SignedHeaders=([^,]+), Signature=(.+)");
+    public static final String ELIXIR_AAI_TOKEN = "ELIXIR_AAI_TOKEN";
+    public static final String ELIXIR_IDENTITY = "ELIXIR_IDENTITY";
+    public static final String TSD_TOKEN = "TSD_TOKEN";
 
     @Autowired
     private JWKProvider jwkProvider;
 
-    @Value("${default_jku}")
+    @Value("${elixir-aai.default-jku}")
     private String defaultJKU;
 
     @Override
     public void authenticate(HttpServletRequest request) {
         try {
             String token = validateToken(getToken(request));
-            request.setAttribute(JWT_TOKEN, token);
+            request.setAttribute(ELIXIR_AAI_TOKEN, token);
             DecodedJWT decodedToken = JWT.decode(token);
             String subject = decodedToken.getSubject();
-            request.setAttribute(JWT_SUBJECT, subject);
+            request.setAttribute(ELIXIR_IDENTITY, subject);
         } catch (Exception e) {
             throw new SecurityException(e.getMessage());
         }
@@ -62,19 +58,7 @@ public class JWTAuthenticationService implements AuthenticationService {
     }
 
     private String getToken(HttpServletRequest request) {
-        String authorization = request.getHeader("authorization");
-        if (StringUtils.isEmpty(authorization)) {
-            throw new SecurityException("Authorization header missing");
-        }
-        Matcher matcher = AWS_AUTH4_PATTERN.matcher(authorization);
-        if (matcher.matches()) {
-            return matcher.group(1);
-        }
-        matcher = AWS_AUTH_PATTERN.matcher(authorization);
-        if (matcher.matches()) {
-            return matcher.group(1);
-        }
-        throw new SecurityException("Authorization header doesn't match the AWS Signature V4 pattern");
+        return request.getHeader("authorization").replace("Bearer ", "");
     }
 
 }
