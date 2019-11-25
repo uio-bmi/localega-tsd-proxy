@@ -14,14 +14,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Slf4j
-@RestController("/")
+@RestController
 public class ProxyController {
 
     @Autowired
     private TSDFileAPIClient tsdFileAPIClient;
 
     @PutMapping("/upload/{fileName}")
-    @ResponseBody
     public ResponseEntity upload(InputStream inputStream,
                                  @PathVariable("fileName") String fileName) throws IOException {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
@@ -29,7 +28,6 @@ public class ProxyController {
     }
 
     @PatchMapping("/stream/{fileName}")
-    @ResponseBody
     public ResponseEntity stream(InputStream inputStream,
                                  @PathVariable("fileName") String fileName,
                                  @RequestParam(value = "chunk", required = false) String chunk,
@@ -47,15 +45,13 @@ public class ProxyController {
     }
 
     @GetMapping("/resumables")
-    @ResponseBody
-    public ResponseEntity reumables() {
+    public ResponseEntity resumables() {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
         return ResponseEntity.ok(tsdFileAPIClient.getResumableUploads(token.getToken()));
     }
 
     @DeleteMapping("/resumables")
-    @ResponseBody
-    public ResponseEntity reumables(@RequestParam(value = "uploadId", required = false) String uploadId) {
+    public ResponseEntity resumables(@RequestParam(value = "uploadId") String uploadId) {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
         return ResponseEntity.ok(tsdFileAPIClient.deleteResumableUpload(token.getToken(), uploadId));
     }

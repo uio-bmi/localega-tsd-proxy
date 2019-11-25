@@ -1,2 +1,18 @@
-elixir-aai.default-jku: ${DEFAULT_JKU:https://login.elixir-czech.org/oidc/jwk}
+spring.security.oauth2.client:
+  registration:
+    elixir-aai:
+      client-id: ${CLIENT_ID}
+      client-secret: ${CLIENT_SECRET}
+      authorization-grant-type: ${AUTHORIZATION_GRANT_TYPE:authorization_code}
+      redirect-uri: ${REDIRECT_URI:http://localhost:8080/oidc-protected}
+      scope: ${SCOPE:openid}
+  provider:
+    elixir-aai:
+      authorization-uri: ${AUTHORIZATION_URI:https://login.elixir-czech.org/oidc/authorize}
+      token-uri: ${TOKEN_URI:https://login.elixir-czech.org/oidc/token}
+      user-info-uri: ${USER_INFO_URI:https://login.elixir-czech.org/oidc/userinfo}
+      user-name-attribute: ${USER_NAME_ATTRIBUTE:sub}
+      jwk-set-uri: ${JWK_SET_URI:https://login.elixir-czech.org/oidc/jwk}
+
+elixir-aai.default-jku: ${JWK_SET_URI:https://login.elixir-czech.org/oidc/jwk}
 tsd.access-key: ${TSD_ACCESS_KEY}
