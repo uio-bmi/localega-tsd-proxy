@@ -30,7 +30,7 @@ public class ProxyController {
     public ResponseEntity upload(InputStream inputStream,
                                  @PathVariable("fileName") String fileName) throws IOException {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
-        return ResponseEntity.ok(tsdFileAPIClient.upload(token.getToken(), inputStream, getFullFileName(fileName)));
+        return ResponseEntity.ok(tsdFileAPIClient.upload(token.getToken(), inputStream, fileName));
     }
 
     @PatchMapping("/stream/{fileName}")
@@ -41,7 +41,7 @@ public class ProxyController {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
         Chunk result;
         if (StringUtils.isEmpty(uploadId)) { // new upload
-            result = tsdFileAPIClient.initializeResumableUpload(token.getToken(), inputStream.readAllBytes(), getFullFileName(fileName));
+            result = tsdFileAPIClient.initializeResumableUpload(token.getToken(), inputStream.readAllBytes(), fileName);
         } else if ("end".equalsIgnoreCase(chunk)) { // finalizing upload
             result = tsdFileAPIClient.finalizeResumableUpload(token.getToken(), uploadId);
         } else { // uploading an intermediate chunk
@@ -60,13 +60,6 @@ public class ProxyController {
     public ResponseEntity resumables(@RequestParam(value = "uploadId") String uploadId) {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
         return ResponseEntity.ok(tsdFileAPIClient.deleteResumableUpload(token.getToken(), uploadId));
-    }
-
-    private String getFullFileName(String fileName) {
-        String elixirIdentity = request.getAttribute(ELIXIR_IDENTITY).toString();
-        int atIndex = elixirIdentity.lastIndexOf("@");
-        String prefix = elixirIdentity.substring(0, atIndex);
-        return prefix + "-" + fileName;
     }
 
 }
