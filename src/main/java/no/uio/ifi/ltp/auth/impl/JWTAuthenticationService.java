@@ -23,7 +23,6 @@ public class JWTAuthenticationService implements AuthenticationService {
 
     public static final String ELIXIR_AAI_TOKEN = "ELIXIR_AAI_TOKEN";
     public static final String ELIXIR_IDENTITY = "ELIXIR_IDENTITY";
-    public static final String TSD_TOKEN = "TSD_TOKEN";
 
     @Autowired
     private JWKProvider jwkProvider;

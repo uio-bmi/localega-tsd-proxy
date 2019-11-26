@@ -10,12 +10,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
+
+import static no.uio.ifi.ltp.auth.impl.JWTAuthenticationService.ELIXIR_IDENTITY;
 
 @Slf4j
 @RestController
 public class ProxyController {
+
+    @Autowired
+    private HttpServletRequest request;
 
     @Autowired
     private TSDFileAPIClient tsdFileAPIClient;
@@ -24,7 +30,7 @@ public class ProxyController {
     public ResponseEntity upload(InputStream inputStream,
                                  @PathVariable("fileName") String fileName) throws IOException {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
-        return ResponseEntity.ok(tsdFileAPIClient.upload(token.getToken(), inputStream, fileName));
+        return ResponseEntity.ok(tsdFileAPIClient.upload(token.getToken(), inputStream, getFullFileName(fileName)));
     }
 
     @PatchMapping("/stream/{fileName}")
@@ -35,7 +41,7 @@ public class ProxyController {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
         Chunk result;
         if (StringUtils.isEmpty(uploadId)) { // new upload
-            result = tsdFileAPIClient.initializeResumableUpload(token.getToken(), inputStream.readAllBytes(), fileName);
+            result = tsdFileAPIClient.initializeResumableUpload(token.getToken(), inputStream.readAllBytes(), getFullFileName(fileName));
         } else if ("end".equalsIgnoreCase(chunk)) { // finalizing upload
             result = tsdFileAPIClient.finalizeResumableUpload(token.getToken(), uploadId);
         } else { // uploading an intermediate chunk
@@ -54,6 +60,13 @@ public class ProxyController {
     public ResponseEntity resumables(@RequestParam(value = "uploadId") String uploadId) {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
         return ResponseEntity.ok(tsdFileAPIClient.deleteResumableUpload(token.getToken(), uploadId));
+    }
+
+    private String getFullFileName(String fileName) {
+        String elixirIdentity = request.getAttribute(ELIXIR_IDENTITY).toString();
+        int atIndex = elixirIdentity.lastIndexOf("@");
+        String prefix = elixirIdentity.substring(0, atIndex);
+        return prefix + "-" + fileName;
     }
 
 }
