@@ -11,8 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.UUID;
+import java.util.Collection;
 
 @Slf4j
 @Aspect
@@ -21,19 +20,16 @@ import java.util.UUID;
 public class AuthenticationAspect {
 
     @Autowired
-    private HttpServletRequest request;
-
-    @Autowired
-    private AuthenticationService authenticationService;
+    private Collection<AuthenticationService> authenticationServices;
 
     @Around("execution(public * no.uio.ifi.ltp.rest.ProxyController.*(..))")
     public Object authenticate(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
-            authenticationService.authenticate(request);
-            return joinPoint.proceed();
+            if (authenticationServices.stream().anyMatch(AuthenticationService::authenticate)) {
+                return joinPoint.proceed();
+            }
+            throw new SecurityException();
         } catch (SecurityException e) {
-            UUID requestId = UUID.randomUUID();
-            log.error("Request ID: {}, Error: {}", requestId, e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }

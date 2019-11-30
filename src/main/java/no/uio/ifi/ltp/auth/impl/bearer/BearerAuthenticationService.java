@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.auth.impl;
+package no.uio.ifi.ltp.auth.impl.bearer;
 
 import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkException;
@@ -7,7 +7,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
-import no.uio.ifi.ltp.auth.AuthenticationService;
+import no.uio.ifi.ltp.auth.impl.AbstractAuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,12 +17,14 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.interfaces.RSAPublicKey;
 
+import static org.springframework.amqp.support.AmqpHeaders.USER_ID;
+
 @Slf4j
 @Service
-public class JWTAuthenticationService implements AuthenticationService {
+public class BearerAuthenticationService extends AbstractAuthenticationService {
 
-    public static final String ELIXIR_AAI_TOKEN = "ELIXIR_AAI_TOKEN";
-    public static final String ELIXIR_IDENTITY = "ELIXIR_IDENTITY";
+    @Autowired
+    private HttpServletRequest request;
 
     @Autowired
     private JWKProvider jwkProvider;
@@ -31,15 +33,15 @@ public class JWTAuthenticationService implements AuthenticationService {
     private String defaultJKU;
 
     @Override
-    public void authenticate(HttpServletRequest request) {
+    public boolean authenticate() {
         try {
-            String token = validateToken(getToken(request));
-            request.setAttribute(ELIXIR_AAI_TOKEN, token);
+            String token = validateToken(getAuth());
             DecodedJWT decodedToken = JWT.decode(token);
             String subject = decodedToken.getSubject();
-            request.setAttribute(ELIXIR_IDENTITY, subject);
+            request.setAttribute(USER_ID, subject);
+            return true;
         } catch (Exception e) {
-            throw new SecurityException(e.getMessage());
+            return false;
         }
     }
 
@@ -56,7 +58,8 @@ public class JWTAuthenticationService implements AuthenticationService {
         return token;
     }
 
-    private String getToken(HttpServletRequest request) {
+    @Override
+    protected String getAuth() {
         return request.getHeader("authorization").replace("Bearer ", "");
     }
 

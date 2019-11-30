@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.auth.impl;
+package no.uio.ifi.ltp.auth.impl.bearer;
 
 import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkException;
@@ -6,7 +6,7 @@ import com.auth0.jwk.SigningKeyNotFoundException;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service
+@Component
 public class JWKProvider {
 
     @Autowired

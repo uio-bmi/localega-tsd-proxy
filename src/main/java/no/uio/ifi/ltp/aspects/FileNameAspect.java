@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static no.uio.ifi.ltp.auth.impl.JWTAuthenticationService.ELIXIR_IDENTITY;
+import static org.springframework.amqp.support.AmqpHeaders.USER_ID;
 
 @Slf4j
 @Aspect
@@ -37,7 +37,7 @@ public class FileNameAspect {
     }
 
     private String getFullFileName(String fileName) {
-        String elixirIdentity = request.getAttribute(ELIXIR_IDENTITY).toString();
+        String elixirIdentity = request.getAttribute(USER_ID).toString();
         int atIndex = elixirIdentity.lastIndexOf("@");
         String prefix = elixirIdentity.substring(0, atIndex);
         return prefix + "-" + fileName;
