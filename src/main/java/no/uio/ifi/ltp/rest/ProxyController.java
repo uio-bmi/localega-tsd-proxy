@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.io.InputStream;
 
-@SuppressWarnings("ALL")
+@SuppressWarnings("rawtypes")
 @Slf4j
 @RestController
 public class ProxyController {

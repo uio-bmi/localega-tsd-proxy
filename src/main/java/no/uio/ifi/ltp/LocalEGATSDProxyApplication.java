@@ -25,7 +25,7 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
 
     @Bean
     public TSDFileAPIClient tsdFileAPIClient() {
-        return new TSDFileAPIClient.Builder().host("localhost:8888").checkCertificate(false).accessKey(tsdAccessKey).build();
+        return new TSDFileAPIClient.Builder().accessKey(tsdAccessKey).build();
     }
 
     @Override
