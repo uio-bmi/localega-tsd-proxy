@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.io.InputStream;
 
-@SuppressWarnings("rawtypes")
 @Slf4j
 @RestController
 public class ProxyController {
@@ -24,12 +23,12 @@ public class ProxyController {
     private TSDFileAPIClient tsdFileAPIClient;
 
     @PatchMapping("/stream/{fileName}")
-    public ResponseEntity stream(InputStream inputStream,
-                                 @PathVariable("fileName") String fileName,
-                                 @RequestParam(value = "uploadId", required = false) String uploadId,
-                                 @RequestParam(value = "chunk", required = false) String chunk,
-                                 @RequestParam(value = "fileSize", required = false) String fileSize,
-                                 @RequestParam(value = "md5") String md5) throws IOException {
+    public ResponseEntity<?> stream(InputStream inputStream,
+                                    @PathVariable("fileName") String fileName,
+                                    @RequestParam(value = "uploadId", required = false) String uploadId,
+                                    @RequestParam(value = "chunk", required = false) String chunk,
+                                    @RequestParam(value = "fileSize", required = false) String fileSize,
+                                    @RequestParam(value = "md5") String md5) throws IOException {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
 
         byte[] chunkBytes = inputStream.readAllBytes();
@@ -50,7 +49,7 @@ public class ProxyController {
         return validateChunkChecksum(token, response, md5);
     }
 
-    private ResponseEntity validateChunkChecksum(Token token, Chunk response, String md5) {
+    private ResponseEntity<?> validateChunkChecksum(Token token, Chunk response, String md5) {
         ResumableUpload resumableUpload = tsdFileAPIClient.getResumableUpload(token.getToken(), response.getId()).orElseThrow();
         if (!md5.equalsIgnoreCase(resumableUpload.getMd5Sum())) {
             tsdFileAPIClient.deleteResumableUpload(token.getToken(), response.getId());
@@ -60,7 +59,7 @@ public class ProxyController {
     }
 
     @GetMapping("/resumables")
-    public ResponseEntity getResumables(@RequestParam(value = "uploadId", required = false) String uploadId) {
+    public ResponseEntity<?> getResumables(@RequestParam(value = "uploadId", required = false) String uploadId) {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
         if (StringUtils.isEmpty(uploadId)) {
             return ResponseEntity.ok(tsdFileAPIClient.getResumableUploads(token.getToken()));
@@ -70,7 +69,7 @@ public class ProxyController {
     }
 
     @DeleteMapping("/resumables")
-    public ResponseEntity deleteResumable(@RequestParam(value = "uploadId") String uploadId) {
+    public ResponseEntity<?> deleteResumable(@RequestParam(value = "uploadId") String uploadId) {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
         return ResponseEntity.ok(tsdFileAPIClient.deleteResumableUpload(token.getToken(), uploadId));
     }
