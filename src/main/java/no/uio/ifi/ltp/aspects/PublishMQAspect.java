@@ -41,8 +41,8 @@ public class PublishMQAspect {
     @Value("${mq.exchange}")
     private String exchange;
 
-    @Value("${mq.routing-key.files}")
-    private String routingKeyFiles;
+    @Value("${mq.routing-key}")
+    private String routingKey;
 
     @SuppressWarnings("unchecked")
     @AfterReturning(pointcut = "execution(public * no.uio.ifi.ltp.rest.ProxyController.stream(..))", returning = "result")
@@ -71,12 +71,12 @@ public class PublishMQAspect {
 
     private void publishMessage(FileDescriptor fileDescriptor) {
         String json = gson.toJson(fileDescriptor);
-        rabbitTemplate.convertAndSend(exchange, routingKeyFiles, json, m -> {
+        rabbitTemplate.convertAndSend(exchange, routingKey, json, m -> {
             m.getMessageProperties().setContentType(ContentType.APPLICATION_JSON.getMimeType());
             m.getMessageProperties().setCorrelationId(UUID.randomUUID().toString());
             return m;
         });
-        log.info("Message published to {} exchange with routing key {}: {}", exchange, routingKeyFiles, json);
+        log.info("Message published to {} exchange with routing key {}: {}", exchange, routingKey, json);
     }
 
 }
