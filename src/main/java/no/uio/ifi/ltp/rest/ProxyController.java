@@ -28,6 +28,7 @@ public class ProxyController {
                                  @PathVariable("fileName") String fileName,
                                  @RequestParam(value = "uploadId", required = false) String uploadId,
                                  @RequestParam(value = "chunk", required = false) String chunk,
+                                 @RequestParam(value = "fileSize", required = false) String fileSize,
                                  @RequestParam(value = "md5") String md5) throws IOException {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
 

@@ -20,3 +20,7 @@ cega:
   password: ${CEGA_PASSWORD}
 elixir-aai.default-jku: ${JWK_SET_URI:https://login.elixir-czech.org/oidc/jwk}
 tsd.access-key: ${TSD_ACCESS_KEY}
+
+mq:
+  exchange: ${EXCHANGE:cega}
+  routing-key: ${ROUTING_KEY:files.inbox}
