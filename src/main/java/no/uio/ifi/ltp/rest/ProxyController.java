@@ -36,12 +36,7 @@ public class ProxyController {
         // new upload
         if (StringUtils.isEmpty(uploadId)) {
             Chunk response = tsdFileAPIClient.initializeResumableUpload(token.getToken(), chunkBytes, fileName);
-            ResumableUpload resumableUpload = tsdFileAPIClient.getResumableUpload(token.getToken(), response.getId()).orElseThrow();
-            if (!md5.equalsIgnoreCase(resumableUpload.getMd5Sum())) {
-                tsdFileAPIClient.deleteResumableUpload(token.getToken(), response.getId());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Checksum mismatch. Resumable upload interrrupted and can't be resumed. Please, re-upload the whole file.");
-            }
-            return ResponseEntity.ok(chunk);
+            return validateChunkChecksum(token, response, md5);
         }
 
         // finalizing upload
@@ -51,6 +46,10 @@ public class ProxyController {
 
         // uploading an intermediate chunk
         Chunk response = tsdFileAPIClient.uploadChunk(token.getToken(), Long.parseLong(chunk), chunkBytes, uploadId);
+        return validateChunkChecksum(token, response, md5);
+    }
+
+    private ResponseEntity validateChunkChecksum(Token token, Chunk response, String md5) {
         ResumableUpload resumableUpload = tsdFileAPIClient.getResumableUpload(token.getToken(), response.getId()).orElseThrow();
         if (!md5.equalsIgnoreCase(resumableUpload.getMd5Sum())) {
             tsdFileAPIClient.deleteResumableUpload(token.getToken(), response.getId());
