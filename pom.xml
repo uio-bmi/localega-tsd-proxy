@@ -67,11 +67,6 @@
             <version>3.8.3</version>
         </dependency>
         <dependency>
-            <groupId>com.amdelamar</groupId>
-            <artifactId>jhash</artifactId>
-            <version>2.1.2</version>
-        </dependency>
-        <dependency>
             <groupId>no.uio.ifi</groupId>
             <artifactId>tsd-file-api-client</artifactId>
             <version>0.3.0</version>

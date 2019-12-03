@@ -1,11 +1,14 @@
 package no.uio.ifi.ltp.auth.impl.basic;
 
-import com.amdelamar.jhash.Hash;
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.ltp.auth.impl.AbstractAuthenticationService;
 import no.uio.ifi.ltp.dto.Credentials;
+import org.apache.commons.codec.digest.Crypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
@@ -26,10 +29,14 @@ public class BasicAuthenticationService extends AbstractAuthenticationService {
     public boolean authenticate() {
         try {
             String[] usernameAndPassword = new String(Base64.getDecoder().decode(getAuth())).split(":");
-            Credentials credentials = credentialsProvider.getCredentials(usernameAndPassword[0]);
+            String username = usernameAndPassword[0];
+            Credentials credentials = credentialsProvider.getCredentials(username);
             String hash = credentials.getPasswordHash();
-            if (Hash.password(usernameAndPassword[1].toCharArray()).verify(hash)) {
-                request.setAttribute(USER_ID, usernameAndPassword[0]);
+            String password = usernameAndPassword[1];
+            if (StringUtils.startsWithIgnoreCase(hash, "$2")
+                    ? BCrypt.checkpw(password, hash)
+                    : ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, hash))) {
+                request.setAttribute(USER_ID, username);
                 return true;
             }
             return false;
