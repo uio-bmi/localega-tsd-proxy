@@ -8,6 +8,9 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.UUID;
 
 @EnableCaching
 @SpringBootApplication
@@ -26,6 +29,16 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
     @Bean
     public TSDFileAPIClient tsdFileAPIClient() {
         return new TSDFileAPIClient.Builder().accessKey(tsdAccessKey).build();
+    }
+
+    @Bean
+    public String secret() {
+        return UUID.randomUUID().toString();
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 
     @Override

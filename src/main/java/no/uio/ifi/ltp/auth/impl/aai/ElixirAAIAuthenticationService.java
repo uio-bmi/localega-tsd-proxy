@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.auth.impl.bearer;
+package no.uio.ifi.ltp.auth.impl.aai;
 
 import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkException;
@@ -13,18 +13,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.interfaces.RSAPublicKey;
 
-import static org.springframework.amqp.support.AmqpHeaders.USER_ID;
-
 @Slf4j
 @Service
-public class BearerAuthenticationService extends AbstractAuthenticationService {
-
-    @Autowired
-    private HttpServletRequest request;
+public class ElixirAAIAuthenticationService extends AbstractAuthenticationService {
 
     @Autowired
     private JWKProvider jwkProvider;
@@ -33,20 +27,8 @@ public class BearerAuthenticationService extends AbstractAuthenticationService {
     private String defaultJKU;
 
     @Override
-    public boolean authenticate() {
-        try {
-            String token = validateToken(getAuth());
-            DecodedJWT decodedToken = JWT.decode(token);
-            String subject = decodedToken.getSubject();
-            request.setAttribute(USER_ID, subject);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private String validateToken(String token) throws IOException, JwkException {
-        DecodedJWT decodedToken = JWT.decode(token);
+    protected String getSubject(String auth) throws IOException, JwkException {
+        DecodedJWT decodedToken = JWT.decode(auth);
         String jku = decodedToken.getHeaderClaim("jku").asString();
         if (StringUtils.isEmpty(jku)) {
             jku = defaultJKU;
@@ -54,13 +36,8 @@ public class BearerAuthenticationService extends AbstractAuthenticationService {
         String keyId = decodedToken.getKeyId();
         Jwk jwk = jwkProvider.get(jku, keyId);
         JWTVerifier verifier = JWT.require(Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null)).build();
-        verifier.verify(token);
-        return token;
-    }
-
-    @Override
-    protected String getAuth() {
-        return request.getHeader("authorization").replace("Bearer ", "");
+        DecodedJWT decodedJWT = verifier.verify(auth);
+        return decodedJWT.getSubject();
     }
 
 }

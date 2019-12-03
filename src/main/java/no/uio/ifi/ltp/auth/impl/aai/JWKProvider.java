@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.auth.impl.bearer;
+package no.uio.ifi.ltp.auth.impl.aai;
 
 import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkException;
