@@ -1,3 +1,8 @@
+server.ssl:
+  key-store-type: PKCS12
+  key-store: file:${SERVER_KEYSTORE_PATH:/etc/ega/ssl/server.cert}
+  key-store-password: ${SERVER_CERT_PASSWORD}
+
 spring.security.oauth2.client:
   registration:
     elixir-aai:
@@ -14,12 +19,30 @@ spring.security.oauth2.client:
       user-name-attribute: ${USER_NAME_ATTRIBUTE:sub}
       jwk-set-uri: ${JWK_SET_URI:https://login.elixir-czech.org/oidc/jwk}
 
+spring.rabbitmq:
+  host: ${BROKER_HOST:pubic-mq}
+  port: ${BROKER_PORT:5671}
+  virtual-host: ${BROKER_VHOST:/}
+  username: ${BROKER_USERNAME:admin}
+  password: ${BROKER_PASSWORD:guest}
+  ssl:
+    enabled: true
+    algorithm: TLSv1.2
+    key-store-type: PKCS12
+    key-store: file:${CLIENT_KEYSTORE_PATH:/etc/ega/ssl/client.cert}
+    key-store-password: ${CLIENT_CERT_PASSWORD}
+
 cega:
   auth-url: ${CEGA_AUTH_URL:https://egatest.crg.eu/lega/v1/legas/users/%s?idType=username}
   username: ${CEGA_USERNAME}
   password: ${CEGA_PASSWORD}
+
 elixir-aai.default-jku: ${JWK_SET_URI:https://login.elixir-czech.org/oidc/jwk}
-tsd.access-key: ${TSD_ACCESS_KEY}
+
+tsd:
+  access-key: ${TSD_ACCESS_KEY}
+  key-store: file:${CLIENT_KEYSTORE_PATH:/etc/ega/ssl/client.cert}
+  key-store-password: ${CLIENT_CERT_PASSWORD}
 
 mq:
   exchange: ${EXCHANGE:cega}

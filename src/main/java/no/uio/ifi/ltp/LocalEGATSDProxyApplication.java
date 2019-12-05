@@ -19,6 +19,12 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
     @Value("${tsd.access-key}")
     private String tsdAccessKey;
 
+    @Value("${tsd.key-store}")
+    private String tsdKeyStore;
+
+    @Value("${tsd.key-store-password}")
+    private String tsdKeyStorePassword;
+
     @Value("${spring.security.oauth2.client.registration.elixir-aai.redirect-uri}")
     private String redirectURI;
 
@@ -28,7 +34,7 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
 
     @Bean
     public TSDFileAPIClient tsdFileAPIClient() {
-        return new TSDFileAPIClient.Builder().accessKey(tsdAccessKey).build();
+        return new TSDFileAPIClient.Builder().clientCertificateStore(tsdKeyStore, tsdKeyStorePassword).accessKey(tsdAccessKey).build();
     }
 
     @Bean
