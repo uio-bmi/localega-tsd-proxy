@@ -16,6 +16,9 @@ import java.util.UUID;
 @SpringBootApplication
 public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
 
+    @Value("${tsd.host}")
+    private String tsdHost;
+
     @Value("${tsd.access-key}")
     private String tsdAccessKey;
 
@@ -34,7 +37,11 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
 
     @Bean
     public TSDFileAPIClient tsdFileAPIClient() {
-        return new TSDFileAPIClient.Builder().clientCertificateStore(tsdKeyStore, tsdKeyStorePassword).accessKey(tsdAccessKey).build();
+        return new TSDFileAPIClient.Builder()
+                .host(tsdHost)
+                .clientCertificateStore(tsdKeyStore, tsdKeyStorePassword)
+                .accessKey(tsdAccessKey)
+                .build();
     }
 
     @Bean
