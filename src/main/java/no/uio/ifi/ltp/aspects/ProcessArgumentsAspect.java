@@ -62,9 +62,11 @@ public class ProcessArgumentsAspect {
 
     private String getFullFileName(String fileName) {
         String elixirIdentity = request.getAttribute(USER_ID).toString();
-        int atIndex = elixirIdentity.lastIndexOf("@");
-        String prefix = elixirIdentity.substring(0, atIndex);
-        return prefix + "-" + fileName;
+        if (elixirIdentity.contains("@")) {
+            int atIndex = elixirIdentity.lastIndexOf("@");
+            elixirIdentity = elixirIdentity.substring(0, atIndex);
+        }
+        return elixirIdentity + "-" + fileName;
     }
 
 }
