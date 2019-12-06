@@ -42,8 +42,7 @@ elixir-aai.default-jku: ${JWK_SET_URI:https://login.elixir-czech.org/oidc/jwk}
 tsd:
   host: ${TSD_HOST:api.tsd.usit.no}
   access-key: ${TSD_ACCESS_KEY}
-  key-store: ${CLIENT_KEYSTORE_PATH:/etc/ega/ssl/client.cert}
-  key-store-password: ${CLIENT_CERT_PASSWORD}
+  root-ca: ${ROOT_CERT_PATH:/etc/ega/ssl/CA.cert}
 
 mq:
   exchange: ${EXCHANGE:cega}
