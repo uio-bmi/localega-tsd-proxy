@@ -29,8 +29,8 @@ spring.rabbitmq:
     enabled: true
     algorithm: TLSv1.2
     key-store-type: PKCS12
-    key-store: file:${CLIENT_KEYSTORE_PATH:/etc/ega/ssl/client.cert}
-    key-store-password: ${CLIENT_CERT_PASSWORD}
+    key-store: file:${SERVER_KEYSTORE_PATH:/etc/ega/ssl/server.cert}
+    key-store-password: ${SERVER_CERT_PASSWORD}
 
 cega:
   auth-url: ${CEGA_AUTH_URL:https://egatest.crg.eu/lega/v1/legas/users/%s?idType=username}
