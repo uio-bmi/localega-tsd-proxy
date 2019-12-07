@@ -53,7 +53,7 @@ public class PublishMQAspect {
             return;
         }
 
-        if (!"end".equalsIgnoreCase(request.getAttribute(CHUNK).toString())) {
+        if (!"end".equalsIgnoreCase(String.valueOf(request.getAttribute(CHUNK)))) {
             return;
         }
 
