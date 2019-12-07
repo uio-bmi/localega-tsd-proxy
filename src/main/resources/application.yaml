@@ -20,7 +20,7 @@ spring.security.oauth2.client:
       jwk-set-uri: ${JWK_SET_URI:https://login.elixir-czech.org/oidc/jwk}
 
 spring.rabbitmq:
-  host: ${BROKER_HOST:pubic-mq}
+  host: ${BROKER_HOST:public-mq}
   port: ${BROKER_PORT:5671}
   virtual-host: ${BROKER_VHOST:/}
   username: ${BROKER_USERNAME:admin}
