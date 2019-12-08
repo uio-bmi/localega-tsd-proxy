@@ -19,11 +19,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.UUID;
+import java.security.cert.CertificateException;
+import java.util.*;
 
 @EnableCaching
 @SpringBootApplication
@@ -37,6 +37,9 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
 
     @Value("${tsd.root-ca}")
     private String tsdRootCA;
+
+    @Value("${tsd.root-ca-password}")
+    private String tsdRootCAPassword;
 
     @Value("${spring.security.oauth2.client.registration.elixir-aai.redirect-uri}")
     private String redirectURI;
@@ -81,9 +84,8 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
                 .redirectionEndpoint().baseUri(baseURI);
     }
 
-    private X509TrustManager trustManagerForCertificates(InputStream in) throws GeneralSecurityException {
-        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-        Collection<? extends Certificate> certificates = certificateFactory.generateCertificates(in);
+    private X509TrustManager trustManagerForCertificates(InputStream in) throws GeneralSecurityException, IOException {
+        Collection<Certificate> certificates = readCertificates(in);
         if (certificates.isEmpty()) {
             throw new IllegalArgumentException("Expected non-empty set of trusted certificates");
         }
@@ -105,6 +107,17 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
             throw new IllegalStateException("Unexpected default trust managers: " + Arrays.toString(trustManagers));
         }
         return (X509TrustManager) trustManagers[0];
+    }
+
+    private Collection<Certificate> readCertificates(InputStream in) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
+        KeyStore p12 = KeyStore.getInstance("pkcs12");
+        p12.load(in, tsdRootCAPassword.toCharArray());
+        Enumeration<String> e = p12.aliases();
+        Collection<Certificate> result = new ArrayList<>();
+        while (e.hasMoreElements()) {
+            result.add(p12.getCertificate(e.nextElement()));
+        }
+        return result;
     }
 
     private KeyStore newEmptyKeyStore(char[] password) throws GeneralSecurityException {
