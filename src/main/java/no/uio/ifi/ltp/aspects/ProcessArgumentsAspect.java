@@ -39,8 +39,8 @@ public class ProcessArgumentsAspect {
             if (parameterTypes[i].equals(String.class)) {
                 switch (parameterNames[i]) {
                     case FILE_NAME:
-                        request.setAttribute(FILE_NAME, arguments[i]);
                         arguments[i] = getFullFileName(arguments[i].toString());
+                        request.setAttribute(FILE_NAME, arguments[i]);
                         break;
                     case UPLOAD_ID:
                         request.setAttribute(UPLOAD_ID, arguments[i]);
