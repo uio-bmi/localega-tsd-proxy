@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.ltp.dto.EncryptedIntegrity;
 import no.uio.ifi.ltp.dto.FileDescriptor;
 import no.uio.ifi.ltp.dto.Operation;
+import no.uio.ifi.tc.model.pojo.TSDFileAPIResponse;
 import org.apache.http.entity.ContentType;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -43,13 +44,21 @@ public class PublishMQAspect {
     @Value("${mq.routing-key}")
     private String routingKey;
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @AfterReturning(pointcut = "execution(public * no.uio.ifi.ltp.rest.ProxyController.stream(..))", returning = "result")
     public void publishMessage(Object result) {
-        ResponseEntity responseEntity = (ResponseEntity) result;
-        if (!String.valueOf(Objects.requireNonNull(responseEntity).getStatusCode()).startsWith("20")) {
-            log.error(String.valueOf(responseEntity.getStatusCode()));
-            log.error(String.valueOf(responseEntity.getBody()));
+        ResponseEntity genericResponseEntity = (ResponseEntity) result;
+        if (!String.valueOf(Objects.requireNonNull(genericResponseEntity).getStatusCode()).startsWith("20")) {
+            log.error(String.valueOf(genericResponseEntity.getStatusCode()));
+            log.error(String.valueOf(genericResponseEntity.getBody()));
+            return;
+        }
+
+        ResponseEntity<TSDFileAPIResponse> tsdResponseEntity = (ResponseEntity<TSDFileAPIResponse>) result;
+        TSDFileAPIResponse body = tsdResponseEntity.getBody();
+        if (!String.valueOf(Objects.requireNonNull(body).getStatusCode()).startsWith("20")) {
+            log.error(String.valueOf(body.getStatusCode()));
+            log.error(String.valueOf(body.getStatusText()));
             return;
         }
 
