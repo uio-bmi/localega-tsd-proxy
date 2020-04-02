@@ -10,6 +10,16 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
+import org.springframework.security.web.PortMapperImpl;
+import org.springframework.security.web.PortResolverImpl;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.*;
@@ -29,41 +39,54 @@ import java.util.*;
 @SpringBootApplication
 public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
 
-    @Value("${tsd.host}")
-    private String tsdHost;
-
-    @Value("${tsd.access-key}")
-    private String tsdAccessKey;
-
-    @Value("${tsd.root-ca}")
-    private String tsdRootCA;
-
-    @Value("${tsd.root-ca-password}")
-    private String tsdRootCAPassword;
-
-    @Value("${spring.security.oauth2.client.registration.elixir-aai.redirect-uri}")
-    private String redirectURI;
-
     public static void main(String[] args) {
         SpringApplication.run(LocalEGATSDProxyApplication.class, args);
     }
 
-    @Bean
-    public TSDFileAPIClient tsdFileAPIClient() throws GeneralSecurityException, IOException {
-        X509TrustManager trustManager = trustManagerForCertificates(Files.newInputStream(Path.of(tsdRootCA)));
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, new TrustManager[]{trustManager}, null);
-        CloseableHttpClient httpClient = HttpClients.custom().setSSLContext(sslContext).build();
-        return new TSDFileAPIClient.Builder()
-                .httpClient(httpClient)
-                .host(tsdHost)
-                .accessKey(tsdAccessKey)
-                .build();
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        PortMapperImpl portMapper = new PortMapperImpl();
+        portMapper.setPortMappings(Collections.singletonMap("8080", "8080"));
+        PortResolverImpl portResolver = new PortResolverImpl();
+        portResolver.setPortMapper(portMapper);
+        LoginUrlAuthenticationEntryPoint entryPoint = new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/elixir-aai");
+        entryPoint.setPortMapper(portMapper);
+        entryPoint.setPortResolver(portResolver);
+        http
+                .exceptionHandling()
+                .authenticationEntryPoint(entryPoint)
+                .and()
+                .csrf().disable()
+                .authorizeRequests()
+                .mvcMatchers("/").authenticated()
+                .mvcMatchers("/token").authenticated()
+                .and()
+                .oauth2Login()
+                .redirectionEndpoint().baseUri("/oidc-protected")
+                .and()
+                .defaultSuccessUrl("/");
     }
 
     @Bean
-    public String secret() {
-        return UUID.randomUUID().toString();
+    public ClientRegistrationRepository clientRegistrationRepository(@Value("${elixir.client.id}") String elixirAAIClientId,
+                                                                     @Value("${elixir.client.secret}") String elixirAAIClientSecret
+    ) {
+        return new InMemoryClientRegistrationRepository(
+                ClientRegistration.withRegistrationId("elixir-aai")
+                        .clientId(elixirAAIClientId)
+                        .clientSecret(elixirAAIClientSecret)
+                        .clientAuthenticationMethod(ClientAuthenticationMethod.BASIC)
+                        .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                        .redirectUriTemplate("{baseUrl}/oidc-protected")
+                        .scope("openid")
+                        .authorizationUri("https://login.elixir-czech.org/oidc/authorize")
+                        .tokenUri("https://login.elixir-czech.org/oidc/token")
+                        .userInfoUri("https://login.elixir-czech.org/oidc/userinfo")
+                        .userNameAttributeName(IdTokenClaimNames.SUB)
+                        .jwkSetUri("https://login.elixir-czech.org/oidc/jwk")
+                        .clientName("elixir-aai")
+                        .build()
+        );
     }
 
     @Bean
@@ -71,35 +94,39 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
         return new RestTemplate();
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        String baseURI = redirectURI.substring(redirectURI.lastIndexOf("/"));
-        http.csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/").authenticated()
-                .antMatchers("/**").permitAll()
-                .and()
-                .oauth2Login()
-                .defaultSuccessUrl("/")
-                .redirectionEndpoint().baseUri(baseURI);
+    @Bean
+    public TSDFileAPIClient tsdFileAPIClient(@Value("${tsd.host}") String tsdHost,
+                                             @Value("${tsd.access-key}") String tsdAccessKey,
+                                             @Value("${tsd.root-ca}") String tsdRootCA,
+                                             @Value("${tsd.root-ca-password}") String tsdRootCAPassword
+    ) throws GeneralSecurityException, IOException {
+        TSDFileAPIClient.Builder tsdFileAPIClientBuilder = new TSDFileAPIClient.Builder().host(tsdHost).accessKey(tsdAccessKey);
+        if (!StringUtils.isEmpty(tsdRootCA) && StringUtils.isEmpty(tsdRootCAPassword)) {
+            X509TrustManager trustManager = trustManagerForCertificates(Files.newInputStream(Path.of(tsdRootCA)), tsdRootCAPassword);
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{trustManager}, null);
+            CloseableHttpClient httpClient = HttpClients.custom().setSSLContext(sslContext).build();
+            return tsdFileAPIClientBuilder.httpClient(httpClient).build();
+        }
+        return tsdFileAPIClientBuilder.build();
     }
 
-    private X509TrustManager trustManagerForCertificates(InputStream in) throws GeneralSecurityException, IOException {
-        Collection<Certificate> certificates = readCertificates(in);
+    private X509TrustManager trustManagerForCertificates(InputStream in, String password) throws GeneralSecurityException, IOException {
+        Collection<Certificate> certificates = readCertificates(in, password);
         if (certificates.isEmpty()) {
             throw new IllegalArgumentException("Expected non-empty set of trusted certificates");
         }
 
         // put the certificates into a key store
-        char[] password = UUID.randomUUID().toString().toCharArray(); // any password will do
-        KeyStore keyStore = newEmptyKeyStore(password);
+        char[] pass = UUID.randomUUID().toString().toCharArray(); // any password will do
+        KeyStore keyStore = newEmptyKeyStore(pass);
         for (Certificate certificate : certificates) {
             keyStore.setCertificateEntry(UUID.randomUUID().toString(), certificate);
         }
 
         // use it to build an X509 trust manager
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        keyManagerFactory.init(keyStore, password);
+        keyManagerFactory.init(keyStore, pass);
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(keyStore);
         TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
@@ -109,9 +136,9 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
         return (X509TrustManager) trustManagers[0];
     }
 
-    private Collection<Certificate> readCertificates(InputStream in) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
+    private Collection<Certificate> readCertificates(InputStream in, String password) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
         KeyStore p12 = KeyStore.getInstance("pkcs12");
-        p12.load(in, tsdRootCAPassword.toCharArray());
+        p12.load(in, password.toCharArray());
         Enumeration<String> e = p12.aliases();
         Collection<Certificate> result = new ArrayList<>();
         while (e.hasMoreElements()) {
