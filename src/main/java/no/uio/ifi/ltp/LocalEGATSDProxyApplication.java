@@ -96,11 +96,15 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
 
     @Bean
     public TSDFileAPIClient tsdFileAPIClient(@Value("${tsd.host}") String tsdHost,
+                                             @Value("${tsd.project}") String tsdProject,
                                              @Value("${tsd.access-key}") String tsdAccessKey,
                                              @Value("${tsd.root-ca}") String tsdRootCA,
                                              @Value("${tsd.root-ca-password}") String tsdRootCAPassword
     ) throws GeneralSecurityException, IOException {
-        TSDFileAPIClient.Builder tsdFileAPIClientBuilder = new TSDFileAPIClient.Builder().host(tsdHost).accessKey(tsdAccessKey);
+        TSDFileAPIClient.Builder tsdFileAPIClientBuilder = new TSDFileAPIClient.Builder()
+                .host(tsdHost)
+                .project(tsdProject)
+                .accessKey(tsdAccessKey);
         if (!StringUtils.isEmpty(tsdRootCA) && StringUtils.isEmpty(tsdRootCAPassword)) {
             X509TrustManager trustManager = trustManagerForCertificates(Files.newInputStream(Path.of(tsdRootCA)), tsdRootCAPassword);
             SSLContext sslContext = SSLContext.getInstance("TLS");

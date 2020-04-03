@@ -24,10 +24,20 @@ elixir:
   client:
     id: ${CLIENT_ID}
     secret: ${CLIENT_SECRET}
-  openid-configuration-url: ${OPENID_CONFIGURATION_URL:https://login.elixir-czech.org/oidc/.well-known/openid-configuration}
+
+ga4gh:
+  passport:
+    # First, the public key is checked. If present, it's used for validating the token and openid-configuration-url is not used.
+    public-key-path: ${PASSPORT_PUBLIC_KEY_PATH:/etc/ega/jwt/passport.pem}
+    # If public key is absent, then openid-configuration-url is used to query JWK and fetch the public key.
+    openid-configuration-url: ${OPENID_CONFIGURATION_URL:https://login.elixir-czech.org/oidc/.well-known/openid-configuration}
+  visa:
+    # First, the public key is checked. If present, it's used for validating the token. Otherwise, JKU is used instead (entry in the header).
+    public-key-path: ${VISA_PUBLIC_KEY_PATH:/etc/ega/jwt/visa.pem}
 
 tsd:
   host: ${TSD_HOST:api.tsd.usit.no}
+  project: ${TSD_PROJECT:p11}
   access-key: ${TSD_ACCESS_KEY}
   root-ca: ${ROOT_CERT_PATH:/etc/ega/ssl/CA.cert}
   root-ca-password: ${ROOT_CERT_PASSWORD}

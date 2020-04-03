@@ -19,6 +19,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,8 +31,14 @@ import java.util.stream.Collectors;
 @Component
 public class AAIAspect {
 
-    @Value("${elixir.openid-configuration-url}")
+    @Value("${ga4gh.passport.openid-configuration-url}")
     private String openIDConfigurationURL;
+
+    @Value("${ga4gh.passport.public-key-path}")
+    private String passportPublicKeyPath;
+
+    @Value("${ga4gh.visa.public-key-path}")
+    private String visaPublicKeyPath;
 
     @Autowired
     protected HttpServletRequest request;
@@ -69,7 +78,13 @@ public class AAIAspect {
     }
 
     protected Collection<Visa> getVisas(String accessToken) {
-        Collection<String> visaTokens = Clearinghouse.INSTANCE.getVisaTokens(accessToken, openIDConfigurationURL);
+        Collection<String> visaTokens;
+        try {
+            String passportPublicKey = Files.readString(Path.of(passportPublicKeyPath));
+            visaTokens = Clearinghouse.INSTANCE.getVisaTokensWithPEMPublicKey(accessToken, passportPublicKey);
+        } catch (IOException e) {
+            visaTokens = Clearinghouse.INSTANCE.getVisaTokens(accessToken, openIDConfigurationURL);
+        }
         return visaTokens
                 .stream()
                 .map(this::getVisa)
@@ -79,7 +94,12 @@ public class AAIAspect {
     }
 
     protected Optional<Visa> getVisa(String visaToken) {
-        return Clearinghouse.INSTANCE.getVisa(visaToken);
+        try {
+            String visaPublicKey = Files.readString(Path.of(visaPublicKeyPath));
+            return Clearinghouse.INSTANCE.getVisaWithPEMPublicKey(visaToken, visaPublicKey);
+        } catch (IOException e) {
+            return Clearinghouse.INSTANCE.getVisa(visaToken);
+        }
     }
 
     protected Optional<String> getJWTToken() {
