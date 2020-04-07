@@ -1,5 +1,6 @@
 package no.uio.ifi.ltp;
 
+import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.tc.TSDFileAPIClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -35,6 +36,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.*;
 
+@Slf4j
 @EnableCaching
 @SpringBootApplication
 public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
@@ -105,12 +107,15 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
                 .host(tsdHost)
                 .project(tsdProject)
                 .accessKey(tsdAccessKey);
-        if (!StringUtils.isEmpty(tsdRootCA) && StringUtils.isEmpty(tsdRootCAPassword)) {
+        if (!StringUtils.isEmpty(tsdRootCA) && !StringUtils.isEmpty(tsdRootCAPassword)) {
             X509TrustManager trustManager = trustManagerForCertificates(Files.newInputStream(Path.of(tsdRootCA)), tsdRootCAPassword);
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{trustManager}, null);
             CloseableHttpClient httpClient = HttpClients.custom().setSSLContext(sslContext).build();
+            log.info("TSD File API Client initialized with custom HTTP client, root CA: {}", tsdRootCA);
             return tsdFileAPIClientBuilder.httpClient(httpClient).build();
+        } else {
+            log.info("TSD File API Client initialized");
         }
         return tsdFileAPIClientBuilder.build();
     }

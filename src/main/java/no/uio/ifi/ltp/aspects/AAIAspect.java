@@ -25,6 +25,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.springframework.amqp.support.AmqpHeaders.USER_ID;
+
 @Slf4j
 @Aspect
 @Order(1)
@@ -47,6 +49,7 @@ public class AAIAspect {
     public Object authenticate(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<String> optionalToken = getJWTToken();
         if (optionalToken.isEmpty()) {
+            log.info("Authentication attempt without authorization header provided");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String jwtToken = optionalToken.get().replace("Bearer ", "");
@@ -71,8 +74,10 @@ public class AAIAspect {
                     .map(d -> StringUtils.substringAfterLast(d, "/"))
                     .collect(Collectors.toSet());
             log.info("User has access to the following resources: {}", datasets);
+            request.setAttribute(USER_ID, decodedJWT.getSubject());
             return joinPoint.proceed();
         } catch (Exception e) {
+            log.info(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
