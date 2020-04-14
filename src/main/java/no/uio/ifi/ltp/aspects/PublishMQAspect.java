@@ -66,16 +66,20 @@ public class PublishMQAspect {
             return;
         }
 
-        FileDescriptor fileDescriptor = new FileDescriptor();
-        fileDescriptor.setUser(request.getAttribute(USER_ID).toString());
-        fileDescriptor.setFilePath(request.getAttribute(FILE_NAME).toString());
-        fileDescriptor.setFileSize(Long.parseLong(request.getAttribute(FILE_SIZE).toString()));
-        fileDescriptor.setFileLastModified(System.currentTimeMillis() / 1000);
-        fileDescriptor.setOperation(Operation.UPLOAD.name().toLowerCase());
-        fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
-                new EncryptedIntegrity(MD5.toLowerCase(), request.getAttribute(MD5).toString())
-        });
-        publishMessage(fileDescriptor);
+        try {
+            FileDescriptor fileDescriptor = new FileDescriptor();
+            fileDescriptor.setUser(request.getAttribute(USER_ID).toString());
+            fileDescriptor.setFilePath(request.getAttribute(FILE_NAME).toString());
+            fileDescriptor.setFileSize(Long.parseLong(request.getAttribute(FILE_SIZE).toString()));
+            fileDescriptor.setFileLastModified(System.currentTimeMillis() / 1000);
+            fileDescriptor.setOperation(Operation.UPLOAD.name().toLowerCase());
+            fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
+                    new EncryptedIntegrity(MD5.toLowerCase(), request.getAttribute(MD5).toString())
+            });
+            publishMessage(fileDescriptor);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     private void publishMessage(FileDescriptor fileDescriptor) {

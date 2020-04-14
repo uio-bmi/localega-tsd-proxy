@@ -1,23 +1,8 @@
 server.ssl:
+  enabled: ${SSL_ENABLED:true}
   key-store-type: PKCS12
   key-store: file:${SERVER_KEYSTORE_PATH:/etc/ega/ssl/server.cert}
   key-store-password: ${SERVER_CERT_PASSWORD}
-
-spring.security.oauth2.client:
-  registration:
-    elixir-aai:
-      client-id: ${CLIENT_ID}
-      client-secret: ${CLIENT_SECRET}
-      authorization-grant-type: ${AUTHORIZATION_GRANT_TYPE:authorization_code}
-      redirect-uri: ${REDIRECT_URI:http://localhost:8080/oidc-protected}
-      scope: ${SCOPE:openid}
-  provider:
-    elixir-aai:
-      authorization-uri: ${AUTHORIZATION_URI:https://login.elixir-czech.org/oidc/authorize}
-      token-uri: ${TOKEN_URI:https://login.elixir-czech.org/oidc/token}
-      user-info-uri: ${USER_INFO_URI:https://login.elixir-czech.org/oidc/userinfo}
-      user-name-attribute: ${USER_NAME_ATTRIBUTE:sub}
-      jwk-set-uri: ${JWK_SET_URI:https://login.elixir-czech.org/oidc/jwk}
 
 spring.rabbitmq:
   host: ${BROKER_HOST:public-mq}
@@ -35,15 +20,24 @@ spring.rabbitmq:
     key-store: file:${CLIENT_CERT_PATH:/etc/ega/ssl/client.cert}
     key-store-password: ${CLIENT_CERT_PASSWORD}
 
-cega:
-  auth-url: ${CEGA_AUTH_URL:https://egatest.crg.eu/lega/v1/legas/users/%s?idType=username}
-  username: ${CEGA_USERNAME}
-  password: ${CEGA_PASSWORD}
+elixir:
+  client:
+    id: ${CLIENT_ID}
+    secret: ${CLIENT_SECRET}
 
-elixir-aai.default-jku: ${JWK_SET_URI:https://login.elixir-czech.org/oidc/jwk}
+ga4gh:
+  passport:
+    # First, the public key is checked. If present, it's used for validating the token and openid-configuration-url is not used.
+    public-key-path: ${PASSPORT_PUBLIC_KEY_PATH:/etc/ega/jwt/passport.pem}
+    # If public key is absent, then openid-configuration-url is used to query JWK and fetch the public key.
+    openid-configuration-url: ${OPENID_CONFIGURATION_URL:https://login.elixir-czech.org/oidc/.well-known/openid-configuration}
+  visa:
+    # First, the public key is checked. If present, it's used for validating the token. Otherwise, JKU is used instead (entry in the header).
+    public-key-path: ${VISA_PUBLIC_KEY_PATH:/etc/ega/jwt/visa.pem}
 
 tsd:
   host: ${TSD_HOST:api.tsd.usit.no}
+  project: ${TSD_PROJECT:p11}
   access-key: ${TSD_ACCESS_KEY}
   root-ca: ${ROOT_CERT_PATH:/etc/ega/ssl/CA.cert}
   root-ca-password: ${ROOT_CERT_PASSWORD}

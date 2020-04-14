@@ -7,6 +7,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,33 +33,38 @@ public class ProcessArgumentsAspect {
     @SuppressWarnings("rawtypes")
     @Around("execution(public * no.uio.ifi.ltp.rest.ProxyController.stream(..))")
     public Object replaceFileName(ProceedingJoinPoint joinPoint) throws Throwable {
-        Object[] arguments = joinPoint.getArgs();
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String[] parameterNames = signature.getParameterNames();
-        Class[] parameterTypes = signature.getParameterTypes();
-        for (int i = 0; i < arguments.length; i++) {
-            if (parameterTypes[i].equals(String.class)) {
-                switch (parameterNames[i]) {
-                    case FILE_NAME:
-                        request.setAttribute(FILE_NAME, arguments[i]);
-                        arguments[i] = getFullFileName(arguments[i].toString());
-                        break;
-                    case UPLOAD_ID:
-                        request.setAttribute(UPLOAD_ID, arguments[i]);
-                        break;
-                    case CHUNK:
-                        request.setAttribute(CHUNK, arguments[i]);
-                        break;
-                    case FILE_SIZE:
-                        request.setAttribute(FILE_SIZE, arguments[i]);
-                        break;
-                    case MD5:
-                        request.setAttribute(MD5, arguments[i]);
-                        break;
+        try {
+            Object[] arguments = joinPoint.getArgs();
+            MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+            String[] parameterNames = signature.getParameterNames();
+            Class[] parameterTypes = signature.getParameterTypes();
+            for (int i = 0; i < arguments.length; i++) {
+                if (parameterTypes[i].equals(String.class)) {
+                    switch (parameterNames[i]) {
+                        case FILE_NAME:
+                            request.setAttribute(FILE_NAME, arguments[i]);
+                            arguments[i] = getFullFileName(arguments[i].toString());
+                            break;
+                        case UPLOAD_ID:
+                            request.setAttribute(UPLOAD_ID, arguments[i]);
+                            break;
+                        case CHUNK:
+                            request.setAttribute(CHUNK, arguments[i]);
+                            break;
+                        case FILE_SIZE:
+                            request.setAttribute(FILE_SIZE, arguments[i]);
+                            break;
+                        case MD5:
+                            request.setAttribute(MD5, arguments[i]);
+                            break;
+                    }
                 }
             }
+            return joinPoint.proceed(arguments);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-        return joinPoint.proceed(arguments);
     }
 
     private String getFullFileName(String fileName) {
