@@ -35,6 +35,11 @@ ga4gh:
     # First, the public key is checked. If present, it's used for validating the token. Otherwise, JKU is used instead (entry in the header).
     public-key-path: ${VISA_PUBLIC_KEY_PATH:/etc/ega/jwt/visa.pem}
 
+cega:
+  auth-url: ${CEGA_AUTH_URL:https://egatest.crg.eu/lega/v1/legas/users/%s?idType=username}
+  username: ${CEGA_USERNAME}
+  password: ${CEGA_PASSWORD}
+
 tsd:
   host: ${TSD_HOST:api.tsd.usit.no}
   project: ${TSD_PROJECT:p11}
