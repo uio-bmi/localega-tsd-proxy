@@ -133,11 +133,11 @@ public class AAIAspect {
         }
     }
 
-    protected Optional<String> getBearerAuth() {
+    protected Optional<String> getBasicAuth() {
         return Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION));
     }
 
-    protected Optional<String> getBasicAuth() {
+    protected Optional<String> getBearerAuth() {
         return Optional.ofNullable(request.getHeader(HttpHeaders.PROXY_AUTHORIZATION));
     }
 
