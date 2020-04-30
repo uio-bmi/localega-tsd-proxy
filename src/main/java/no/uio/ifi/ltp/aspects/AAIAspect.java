@@ -35,6 +35,9 @@ import java.util.stream.Collectors;
 
 import static org.springframework.amqp.support.AmqpHeaders.USER_ID;
 
+/**
+ * AOP aspect that handles authentication and authorization.
+ */
 @Slf4j
 @Aspect
 @Order(1)
@@ -56,6 +59,13 @@ public class AAIAspect {
     @Autowired
     protected CEGACredentialsProvider cegaCredentialsProvider;
 
+    /**
+     * Retrieves GA4GH Visas from the JWT token provided. Checks CEGA credentials. Decides on whether to allow the request or not.
+     *
+     * @param joinPoint Join point referencing proxied method.
+     * @return Either the object, returned by the proxied method, or HTTP error response.
+     * @throws Throwable In case of error.
+     */
     @Around("execution(public * no.uio.ifi.ltp.rest.ProxyController.*(..))")
     public Object authenticate(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<String> optionalBearerAuth = getBearerAuth();

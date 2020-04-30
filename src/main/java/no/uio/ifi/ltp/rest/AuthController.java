@@ -11,6 +11,9 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller that handles OIDC authentication.
+ */
 @Slf4j
 @RestController
 public class AuthController {
@@ -18,6 +21,11 @@ public class AuthController {
     @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
 
+    /**
+     * Returns access token.
+     * @param authentication <code>OAuth2AuthenticationToken</code>.
+     * @return Access token.
+     */
     @GetMapping("/")
     public ResponseEntity<String> index(OAuth2AuthenticationToken authentication) {
         OAuth2AuthorizedClient oAuth2AuthorizedClient = authorizedClientService.loadAuthorizedClient(authentication.getAuthorizedClientRegistrationId(), authentication.getName());
@@ -25,6 +33,11 @@ public class AuthController {
         return ResponseEntity.ok(oAuth2AuthorizedClient.getAccessToken().getTokenValue());
     }
 
+    /**
+     * Returns OIDC principal.
+     * @param principal <code>OidcUser</code>.
+     * @return OIDC principal.
+     */
     @GetMapping("/token")
     public ResponseEntity<OidcUser> token(@AuthenticationPrincipal OidcUser principal) {
         log.info("User authenticated: {}", principal.getName());

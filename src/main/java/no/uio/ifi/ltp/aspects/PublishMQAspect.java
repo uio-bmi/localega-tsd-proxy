@@ -23,6 +23,9 @@ import java.util.UUID;
 import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.*;
 import static org.springframework.amqp.support.AmqpHeaders.USER_ID;
 
+/**
+ * AOP aspect that publishes MQ messages.
+ */
 @Slf4j
 @Aspect
 @Order(3)
@@ -44,6 +47,11 @@ public class PublishMQAspect {
     @Value("${mq.routing-key}")
     private String routingKey;
 
+    /**
+     * Publishes <code>FileDescriptor</code> to the MQ.
+     *
+     * @param result Object returned by the proxied method.
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @AfterReturning(pointcut = "execution(public * no.uio.ifi.ltp.rest.ProxyController.stream(..))", returning = "result")
     public void publishMessage(Object result) {

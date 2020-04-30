@@ -36,6 +36,14 @@ public class CEGACredentialsProvider {
     @Value("${cega.password}")
     private String cegaPassword;
 
+    /**
+     * Gets CEGA credentials from CEGA auth endpoint, the method is cached.
+     *
+     * @param username CEGA username.
+     * @return <code>Credentials</code> POJO.
+     * @throws MalformedURLException In case CEGA auth endpoint URL is malformed.
+     * @throws URISyntaxException    In case CEGA auth endpoint URL is malformed.
+     */
     @Cacheable("cega-credentials")
     public Credentials getCredentials(String username) throws MalformedURLException, URISyntaxException {
         URL url = new URL(String.format(cegaAuthURL, username));

@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * REST controller for proxying TSD File API requests.
+ */
 @Slf4j
 @RestController
 public class ProxyController {
@@ -22,6 +25,18 @@ public class ProxyController {
     @Autowired
     private TSDFileAPIClient tsdFileAPIClient;
 
+    /**
+     * Streams the file to the TSD File API.
+     *
+     * @param inputStream Binary file stream.
+     * @param fileName    File name.
+     * @param uploadId    Upload ID.
+     * @param chunk       Chunk number.
+     * @param fileSize    File size.
+     * @param md5         MD5 digest.
+     * @return Response code and test for the operation.
+     * @throws IOException In case of I/O error.
+     */
     @PatchMapping("/stream/{fileName}")
     public ResponseEntity<?> stream(InputStream inputStream,
                                     @PathVariable("fileName") String fileName,
@@ -58,6 +73,12 @@ public class ProxyController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Lists resumable uploads.
+     *
+     * @param uploadId Upload ID.
+     * @return List of resumable uploads.
+     */
     @GetMapping("/resumables")
     public ResponseEntity<?> getResumables(@RequestParam(value = "uploadId", required = false) String uploadId) {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
@@ -68,6 +89,12 @@ public class ProxyController {
         }
     }
 
+    /**
+     * Deletes resumable upload.
+     *
+     * @param uploadId Upload ID.
+     * @return Response code and test for the operation.
+     */
     @DeleteMapping("/resumables")
     public ResponseEntity<?> deleteResumable(@RequestParam(value = "uploadId") String uploadId) {
         Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);

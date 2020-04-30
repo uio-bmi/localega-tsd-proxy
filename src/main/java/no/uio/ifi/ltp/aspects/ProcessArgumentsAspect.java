@@ -15,6 +15,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import static org.springframework.amqp.support.AmqpHeaders.USER_ID;
 
+/**
+ * AOP aspect that processes HTTP request parameters.
+ */
 @Slf4j
 @Aspect
 @Order(2)
@@ -30,9 +33,16 @@ public class ProcessArgumentsAspect {
     @Autowired
     private HttpServletRequest request;
 
+    /**
+     * Converts HTTP request parameters to request attributes.
+     *
+     * @param joinPoint Join point referencing proxied method.
+     * @return Either the object, returned by the proxied method, or HTTP error response.
+     * @throws Throwable In case of error.
+     */
     @SuppressWarnings("rawtypes")
     @Around("execution(public * no.uio.ifi.ltp.rest.ProxyController.stream(..))")
-    public Object replaceFileName(ProceedingJoinPoint joinPoint) throws Throwable {
+    public Object processArguments(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
             Object[] arguments = joinPoint.getArgs();
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
