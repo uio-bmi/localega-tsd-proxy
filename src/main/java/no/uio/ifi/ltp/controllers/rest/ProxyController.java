@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.rest;
+package no.uio.ifi.ltp.controllers.rest;
 
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.tc.TSDFileAPIClient;

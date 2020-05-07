@@ -66,7 +66,7 @@ public class AAIAspect {
      * @return Either the object, returned by the proxied method, or HTTP error response.
      * @throws Throwable In case of error.
      */
-    @Around("execution(public * no.uio.ifi.ltp.rest.ProxyController.*(..))")
+    @Around("execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.*(..))")
     public Object authenticate(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<String> optionalBearerAuth = getBearerAuth();
         if (optionalBearerAuth.isEmpty()) {

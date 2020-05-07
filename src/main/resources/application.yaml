@@ -4,6 +4,7 @@ server.ssl:
   key-store: file:${SERVER_KEYSTORE_PATH:/etc/ega/ssl/server.cert}
   key-store-password: ${SERVER_CERT_PASSWORD}
 
+
 spring.rabbitmq:
   host: ${BROKER_HOST:public-mq}
   port: ${BROKER_PORT:5671}
@@ -50,3 +51,7 @@ tsd:
 mq:
   exchange: ${EXCHANGE:cega}
   routing-key: ${ROUTING_KEY:files.inbox}
+
+spring:
+  mvc.static-path-pattern: /**
+  resources.static-locations: ${HTML_PATH:file:html}

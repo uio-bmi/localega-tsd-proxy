@@ -41,7 +41,7 @@ public class ProcessArgumentsAspect {
      * @throws Throwable In case of error.
      */
     @SuppressWarnings("rawtypes")
-    @Around("execution(public * no.uio.ifi.ltp.rest.ProxyController.stream(..))")
+    @Around("execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(..))")
     public Object processArguments(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
             Object[] arguments = joinPoint.getArgs();

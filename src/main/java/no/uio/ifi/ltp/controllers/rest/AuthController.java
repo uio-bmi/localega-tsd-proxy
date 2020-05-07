@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.rest;
+package no.uio.ifi.ltp.controllers.rest;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class AuthController {
      * @param authentication <code>OAuth2AuthenticationToken</code>.
      * @return Access token.
      */
-    @GetMapping("/")
+    @GetMapping("/token")
     public ResponseEntity<String> index(OAuth2AuthenticationToken authentication) {
         OAuth2AuthorizedClient oAuth2AuthorizedClient = authorizedClientService.loadAuthorizedClient(authentication.getAuthorizedClientRegistrationId(), authentication.getName());
         log.info("User authenticated: {}", authentication.getPrincipal().getName());
@@ -38,7 +38,7 @@ public class AuthController {
      * @param principal <code>OidcUser</code>.
      * @return OIDC principal.
      */
-    @GetMapping("/token")
+    @GetMapping("/user")
     public ResponseEntity<OidcUser> token(@AuthenticationPrincipal OidcUser principal) {
         log.info("User authenticated: {}", principal.getName());
         return ResponseEntity.ok(principal);
