@@ -78,6 +78,32 @@ public class ProxyController {
     }
 
     /**
+     * Lists uploaded files.
+     *
+     * @param bearerAuthorization Elixir AAI token.
+     * @return List of resumable uploads.
+     */
+    @GetMapping("/files")
+    public ResponseEntity<?> getFiles(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization) {
+        Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
+        return ResponseEntity.ok(tsdFileAPIClient.listFiles(token.getToken()));
+    }
+
+    /**
+     * Deletes uploaded file.
+     *
+     * @param bearerAuthorization Elixir AAI token.
+     * @param fileName            File name.
+     * @return Response code and test for the operation.
+     */
+    @DeleteMapping("/files")
+    public ResponseEntity<?> deleteFile(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
+                                        @RequestParam(value = "fileName") String fileName) {
+        Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
+        return ResponseEntity.ok(tsdFileAPIClient.deleteFile(token.getToken(), fileName));
+    }
+
+    /**
      * Lists resumable uploads.
      *
      * @param bearerAuthorization Elixir AAI token.
