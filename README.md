@@ -19,7 +19,8 @@ Environment variables used:
 | BROKER_HOST                        | public-mq                                                            | Public RabbitMQ broker hostname                    |
 | BROKER_PORT                        | 5671                                                                 | Public RabbitMQ broker port                        |
 | BROKER_VHOST                       | /                                                                    | Public RabbitMQ broker virtual host                |
-| ROOT_CERT_PATH                     | /etc/ega/ssl/CA.cert                                                 | Path to the CA file for RabbitMQ connectivity      |
+| RABBITMQ_CUSTOM_ROOT               |                                                                      | `true` for using custom root CA with RabbitMQ      |
+| ROOT_CERT_PATH                     | /etc/ega/ssl/CA.cert                                                 | Path to the CA file for RabbitMQ/TSD connectivity  |
 | ROOT_CERT_PASSWORD                 |                                                                      | Passphrase to unlock CA file                       |
 | CLIENT_CERT_PATH                   | /etc/ega/ssl/client.cert                                             | Path to the client cert for RabbitMQ connectivity  |
 | CLIENT_CERT_PASSWORD               |                                                                      | Passphrase to unlock client cert file              |
