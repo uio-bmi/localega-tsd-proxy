@@ -4,7 +4,6 @@ server.ssl:
   key-store: file:${SERVER_KEYSTORE_PATH:/etc/ega/ssl/server.cert}
   key-store-password: ${SERVER_CERT_PASSWORD}
 
-
 spring.rabbitmq:
   host: ${BROKER_HOST:public-mq}
   port: ${BROKER_PORT:5671}
@@ -46,8 +45,8 @@ tsd:
   project: ${TSD_PROJECT:p11}
   app-id: ${TSD_APP_ID:ega}
   access-key: ${TSD_ACCESS_KEY}
-  root-ca: ${ROOT_CERT_PATH:/etc/ega/ssl/CA.cert}
-  root-ca-password: ${ROOT_CERT_PASSWORD:}
+  root-ca: ${TSD_ROOT_CERT_PATH:/etc/ega/ssl/CA.cert}
+  root-ca-password: ${TSD_ROOT_CERT_PASSWORD:}
 
 mq:
   exchange: ${EXCHANGE:cega}

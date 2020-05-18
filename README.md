@@ -20,7 +20,9 @@ Environment variables used:
 | BROKER_PORT                        | 5671                                                                 | Public RabbitMQ broker port                        |
 | BROKER_VHOST                       | /                                                                    | Public RabbitMQ broker virtual host                |
 | ROOT_CERT_PATH                     | /etc/ega/ssl/CA.cert                                                 | Path to the CA file for RabbitMQ connectivity      |
-| ROOT_CERT_PASSWORD                 |                                                                      | Passphrase to unlock CA file                       |
+| ROOT_CERT_PASSWORD                 |                                                                      | Passphrase to unlock RabbitMQ CA file                       |
+| TSD_ROOT_CERT_PATH                 | /etc/ega/ssl/CA.cert                                                 | Path to the CA file for TSD connectivity      |
+| TSD_ROOT_CERT_PASSWORD             |                                                                      | Passphrase to unlock TSD CA file                       |
 | CLIENT_CERT_PATH                   | /etc/ega/ssl/client.cert                                             | Path to the client cert for RabbitMQ connectivity  |
 | CLIENT_CERT_PASSWORD               |                                                                      | Passphrase to unlock client cert file              |
 | BROKER_USERNAME                    | admin                                                                | Public RabbitMQ broker username                    |
