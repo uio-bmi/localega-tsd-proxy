@@ -2,11 +2,11 @@ package no.uio.ifi.ltp.controllers.rest;
 
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.tc.TSDFileAPIClient;
-import no.uio.ifi.tc.model.TokenType;
 import no.uio.ifi.tc.model.pojo.Chunk;
 import no.uio.ifi.tc.model.pojo.ResumableUpload;
 import no.uio.ifi.tc.model.pojo.Token;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -22,29 +22,33 @@ import java.io.InputStream;
 @RestController
 public class ProxyController {
 
+    private static final String TOKEN_TYPE = "elixir";
+
     @Autowired
     private TSDFileAPIClient tsdFileAPIClient;
 
     /**
      * Streams the file to the TSD File API.
      *
-     * @param inputStream Binary file stream.
-     * @param fileName    File name.
-     * @param uploadId    Upload ID.
-     * @param chunk       Chunk number.
-     * @param fileSize    File size.
-     * @param md5         MD5 digest.
+     * @param inputStream         Binary file stream.
+     * @param bearerAuthorization Elixir AAI token.
+     * @param fileName            File name.
+     * @param uploadId            Upload ID.
+     * @param chunk               Chunk number.
+     * @param fileSize            File size.
+     * @param md5                 MD5 digest.
      * @return Response code and test for the operation.
      * @throws IOException In case of I/O error.
      */
     @PatchMapping("/stream/{fileName}")
     public ResponseEntity<?> stream(InputStream inputStream,
+                                    @RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
                                     @PathVariable("fileName") String fileName,
                                     @RequestParam(value = "uploadId", required = false) String uploadId,
                                     @RequestParam(value = "chunk", required = false) String chunk,
                                     @RequestParam(value = "fileSize", required = false) String fileSize,
                                     @RequestParam(value = "md5") String md5) throws IOException {
-        Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
+        Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
 
         byte[] chunkBytes = inputStream.readAllBytes();
 
@@ -76,14 +80,16 @@ public class ProxyController {
     /**
      * Lists resumable uploads.
      *
-     * @param uploadId Upload ID.
+     * @param bearerAuthorization Elixir AAI token.
+     * @param uploadId            Upload ID.
      * @return List of resumable uploads.
      */
     @GetMapping("/resumables")
-    public ResponseEntity<?> getResumables(@RequestParam(value = "uploadId", required = false) String uploadId) {
-        Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
+    public ResponseEntity<?> getResumables(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
+                                           @RequestParam(value = "uploadId", required = false) String uploadId) {
+        Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
         if (StringUtils.isEmpty(uploadId)) {
-            return ResponseEntity.ok(tsdFileAPIClient.getResumableUploads(token.getToken()));
+            return ResponseEntity.ok(tsdFileAPIClient.listResumableUploads(token.getToken()));
         } else {
             return ResponseEntity.ok(tsdFileAPIClient.getResumableUpload(token.getToken(), uploadId));
         }
@@ -92,13 +98,19 @@ public class ProxyController {
     /**
      * Deletes resumable upload.
      *
-     * @param uploadId Upload ID.
+     * @param bearerAuthorization Elixir AAI token.
+     * @param uploadId            Upload ID.
      * @return Response code and test for the operation.
      */
     @DeleteMapping("/resumables")
-    public ResponseEntity<?> deleteResumable(@RequestParam(value = "uploadId") String uploadId) {
-        Token token = tsdFileAPIClient.getToken(TokenType.IMPORT);
+    public ResponseEntity<?> deleteResumable(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
+                                             @RequestParam(value = "uploadId") String uploadId) {
+        Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
         return ResponseEntity.ok(tsdFileAPIClient.deleteResumableUpload(token.getToken(), uploadId));
+    }
+
+    protected String getElixirAAIToken(String bearerAuthorization) {
+        return bearerAuthorization.replace("Bearer ", "");
     }
 
 }

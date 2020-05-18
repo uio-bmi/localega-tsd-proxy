@@ -102,6 +102,7 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
     @Bean
     public TSDFileAPIClient tsdFileAPIClient(@Value("${tsd.host}") String tsdHost,
                                              @Value("${tsd.project}") String tsdProject,
+                                             @Value("${tsd.app-id}") String tsdAppId,
                                              @Value("${tsd.access-key}") String tsdAccessKey,
                                              @Value("${tsd.root-ca}") String tsdRootCA,
                                              @Value("${tsd.root-ca-password}") String tsdRootCAPassword
@@ -109,6 +110,7 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
         TSDFileAPIClient.Builder tsdFileAPIClientBuilder = new TSDFileAPIClient.Builder()
                 .host(tsdHost)
                 .project(tsdProject)
+                .appId(tsdAppId)
                 .accessKey(tsdAccessKey);
         if (!StringUtils.isEmpty(tsdRootCA) && !StringUtils.isEmpty(tsdRootCAPassword)) {
             X509TrustManager trustManager = trustManagerForCertificates(Files.newInputStream(Path.of(tsdRootCA)), tsdRootCAPassword);

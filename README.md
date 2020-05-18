@@ -34,6 +34,7 @@ Environment variables used:
 | CEGA_PASSWORD                      |                                                                      | Central EGA auth endpoint password                 |
 | TSD_HOST                           | api.tsd.usit.no                                                      | TSD File API URL                                   |
 | TSD_PROJECT                        | p11                                                                  | TSD project code                                   |
+| TSD_APP_ID                         | ega                                                                  | TSD application ID                                 |
 | TSD_ACCESS_KEY                     |                                                                      | TSD File API access key                            |
 | PASSPORT_PUBLIC_KEY_PATH           | /etc/ega/jwt/passport.pem                                            | Path to the public key for passport JWT validation |
 | OPENID_CONFIGURATION_URL           | https://login.elixir-czech.org/oidc/.well-known/openid-configuration | URL of the OpenID configuration endpoint           |

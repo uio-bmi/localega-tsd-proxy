@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static org.springframework.amqp.support.AmqpHeaders.USER_ID;
-
 /**
  * AOP aspect that processes HTTP request parameters.
  */
@@ -53,7 +51,6 @@ public class ProcessArgumentsAspect {
                     switch (parameterNames[i]) {
                         case FILE_NAME:
                             request.setAttribute(FILE_NAME, arguments[i]);
-                            arguments[i] = getFullFileName(arguments[i].toString());
                             break;
                         case UPLOAD_ID:
                             request.setAttribute(UPLOAD_ID, arguments[i]);
@@ -75,15 +72,6 @@ public class ProcessArgumentsAspect {
             log.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-    }
-
-    private String getFullFileName(String fileName) {
-        String elixirIdentity = request.getAttribute(USER_ID).toString();
-        if (elixirIdentity.contains("@")) {
-            int atIndex = elixirIdentity.lastIndexOf("@");
-            elixirIdentity = elixirIdentity.substring(0, atIndex);
-        }
-        return elixirIdentity + "-" + fileName;
     }
 
 }
