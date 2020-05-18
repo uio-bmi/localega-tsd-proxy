@@ -81,7 +81,7 @@ public class ProxyController {
      * Lists uploaded files.
      *
      * @param bearerAuthorization Elixir AAI token.
-     * @return List of resumable uploads.
+     * @return List of uploaded files.
      */
     @GetMapping("/files")
     public ResponseEntity<?> getFiles(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization) {
@@ -94,7 +94,7 @@ public class ProxyController {
      *
      * @param bearerAuthorization Elixir AAI token.
      * @param fileName            File name.
-     * @return Response code and test for the operation.
+     * @return Response code and text for the operation.
      */
     @DeleteMapping("/files")
     public ResponseEntity<?> deleteFile(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
@@ -126,7 +126,7 @@ public class ProxyController {
      *
      * @param bearerAuthorization Elixir AAI token.
      * @param uploadId            Upload ID.
-     * @return Response code and test for the operation.
+     * @return Response code and text for the operation.
      */
     @DeleteMapping("/resumables")
     public ResponseEntity<?> deleteResumable(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
