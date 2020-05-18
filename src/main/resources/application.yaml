@@ -47,7 +47,7 @@ tsd:
   app-id: ${TSD_APP_ID:ega}
   access-key: ${TSD_ACCESS_KEY}
   root-ca: ${ROOT_CERT_PATH:/etc/ega/ssl/CA.cert}
-  root-ca-password: ${ROOT_CERT_PASSWORD}
+  root-ca-password: ${ROOT_CERT_PASSWORD:}
 
 mq:
   exchange: ${EXCHANGE:cega}
