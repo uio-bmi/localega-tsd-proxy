@@ -45,15 +45,7 @@ import java.util.*;
 public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
 
     public static void main(String[] args) {
-        SpringApplication application = new SpringApplication(LocalEGATSDProxyApplication.class);
-        if (!StringUtils.isEmpty(System.getenv("RABBITMQ_CUSTOM_ROOT")) ) {
-            Properties properties = new Properties();
-            properties.put("spring.rabbitmq.ssl.trust-store-type", "PKCS12");
-            properties.put("spring.rabbitmq.ssl.trust-store", "file:" + System.getenv("ROOT_CERT_PATH"));
-            properties.put("spring.rabbitmq.ssl.trust-store-password", System.getenv("ROOT_CERT_PASSWORD"));
-            application.setDefaultProperties(properties);
-        }
-        application.run(args);
+        SpringApplication.run(LocalEGATSDProxyApplication.class, args);
     }
 
     @Override

@@ -4,6 +4,7 @@ server.ssl:
   key-store: file:${SERVER_KEYSTORE_PATH:/etc/ega/ssl/server.cert}
   key-store-password: ${SERVER_CERT_PASSWORD}
 
+
 spring.rabbitmq:
   host: ${BROKER_HOST:public-mq}
   port: ${BROKER_PORT:5671}
@@ -13,6 +14,9 @@ spring.rabbitmq:
   ssl:
     enabled: true
     algorithm: TLSv1.2
+    trust-store-type: PKCS12
+    trust-store: file:${ROOT_CERT_PATH:/etc/ega/ssl/CA.cert}
+    trust-store-password: ${ROOT_CERT_PASSWORD}
     key-store-type: PKCS12
     key-store: file:${CLIENT_CERT_PATH:/etc/ega/ssl/client.cert}
     key-store-password: ${CLIENT_CERT_PASSWORD}
