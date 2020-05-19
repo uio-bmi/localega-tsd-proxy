@@ -83,7 +83,7 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
                         .clientAuthenticationMethod(ClientAuthenticationMethod.BASIC)
                         .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                         .redirectUriTemplate("{baseUrl}/oidc-protected")
-                        .scope("openid")
+                        .scope("openid", "ga4gh_passport_v1")
                         .authorizationUri("https://login.elixir-czech.org/oidc/authorize")
                         .tokenUri("https://login.elixir-czech.org/oidc/token")
                         .userInfoUri("https://login.elixir-czech.org/oidc/userinfo")
