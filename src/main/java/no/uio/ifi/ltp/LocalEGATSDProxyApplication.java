@@ -63,6 +63,7 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
                 .and()
                 .csrf().disable()
                 .authorizeRequests()
+                .mvcMatchers("/token.html").authenticated()
                 .mvcMatchers("/token").authenticated()
                 .mvcMatchers("/user").authenticated()
                 .and()
