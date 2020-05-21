@@ -58,6 +58,9 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
         entryPoint.setPortMapper(portMapper);
         entryPoint.setPortResolver(portResolver);
         http
+                .requiresChannel()
+                .anyRequest().requiresSecure()
+                .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(entryPoint)
                 .and()
