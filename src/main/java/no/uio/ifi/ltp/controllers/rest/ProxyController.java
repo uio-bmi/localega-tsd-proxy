@@ -6,6 +6,7 @@ import no.uio.ifi.tc.model.pojo.Chunk;
 import no.uio.ifi.tc.model.pojo.ResumableUpload;
 import no.uio.ifi.tc.model.pojo.Token;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,9 @@ import java.io.InputStream;
 public class ProxyController {
 
     private static final String TOKEN_TYPE = "elixir";
+
+    @Value("${tsd.app-id}")
+    private String tsdAppId;
 
     @Autowired
     private TSDFileAPIClient tsdFileAPIClient;
@@ -54,24 +58,24 @@ public class ProxyController {
 
         // new upload
         if (StringUtils.isEmpty(uploadId)) {
-            Chunk response = tsdFileAPIClient.initializeResumableUpload(token.getToken(), chunkBytes, fileName);
+            Chunk response = tsdFileAPIClient.initializeResumableUpload(token.getToken(), tsdAppId, chunkBytes, fileName);
             return validateChunkChecksum(token, response, md5);
         }
 
         // finalizing upload
         if ("end".equalsIgnoreCase(chunk)) {
-            return ResponseEntity.ok(tsdFileAPIClient.finalizeResumableUpload(token.getToken(), uploadId));
+            return ResponseEntity.ok(tsdFileAPIClient.finalizeResumableUpload(token.getToken(), tsdAppId, uploadId));
         }
 
         // uploading an intermediate chunk
-        Chunk response = tsdFileAPIClient.uploadChunk(token.getToken(), Long.parseLong(chunk), chunkBytes, uploadId);
+        Chunk response = tsdFileAPIClient.uploadChunk(token.getToken(), tsdAppId, Long.parseLong(chunk), chunkBytes, uploadId);
         return validateChunkChecksum(token, response, md5);
     }
 
     private ResponseEntity<?> validateChunkChecksum(Token token, Chunk response, String md5) {
-        ResumableUpload resumableUpload = tsdFileAPIClient.getResumableUpload(token.getToken(), response.getId()).orElseThrow();
+        ResumableUpload resumableUpload = tsdFileAPIClient.getResumableUpload(token.getToken(), tsdAppId, response.getId()).orElseThrow();
         if (!md5.equalsIgnoreCase(resumableUpload.getMd5Sum())) {
-            tsdFileAPIClient.deleteResumableUpload(token.getToken(), response.getId());
+            tsdFileAPIClient.deleteResumableUpload(token.getToken(), tsdAppId, response.getId());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Checksum mismatch. Resumable upload interrrupted and can't be resumed. Please, re-upload the whole file.");
         }
         return ResponseEntity.ok(response);
@@ -86,7 +90,7 @@ public class ProxyController {
     @GetMapping("/files")
     public ResponseEntity<?> getFiles(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization) {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
-        return ResponseEntity.ok(tsdFileAPIClient.listFiles(token.getToken()));
+        return ResponseEntity.ok(tsdFileAPIClient.listFiles(token.getToken(), tsdAppId));
     }
 
     /**
@@ -100,7 +104,7 @@ public class ProxyController {
     public ResponseEntity<?> deleteFile(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
                                         @RequestParam(value = "fileName") String fileName) {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
-        return ResponseEntity.ok(tsdFileAPIClient.deleteFile(token.getToken(), fileName));
+        return ResponseEntity.ok(tsdFileAPIClient.deleteFile(token.getToken(), tsdAppId, fileName));
     }
 
     /**
@@ -115,9 +119,9 @@ public class ProxyController {
                                            @RequestParam(value = "uploadId", required = false) String uploadId) {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
         if (StringUtils.isEmpty(uploadId)) {
-            return ResponseEntity.ok(tsdFileAPIClient.listResumableUploads(token.getToken()));
+            return ResponseEntity.ok(tsdFileAPIClient.listResumableUploads(token.getToken(), tsdAppId));
         } else {
-            return ResponseEntity.ok(tsdFileAPIClient.getResumableUpload(token.getToken(), uploadId));
+            return ResponseEntity.ok(tsdFileAPIClient.getResumableUpload(token.getToken(), tsdAppId, uploadId));
         }
     }
 
@@ -132,7 +136,7 @@ public class ProxyController {
     public ResponseEntity<?> deleteResumable(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
                                              @RequestParam(value = "uploadId") String uploadId) {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
-        return ResponseEntity.ok(tsdFileAPIClient.deleteResumableUpload(token.getToken(), uploadId));
+        return ResponseEntity.ok(tsdFileAPIClient.deleteResumableUpload(token.getToken(), tsdAppId, uploadId));
     }
 
     protected String getElixirAAIToken(String bearerAuthorization) {
