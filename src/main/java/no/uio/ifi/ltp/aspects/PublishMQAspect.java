@@ -21,14 +21,13 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.*;
-import static org.springframework.amqp.support.AmqpHeaders.USER_ID;
 
 /**
  * AOP aspect that publishes MQ messages.
  */
 @Slf4j
 @Aspect
-@Order(3)
+@Order(4)
 @Component
 public class PublishMQAspect {
 
@@ -74,20 +73,16 @@ public class PublishMQAspect {
             return;
         }
 
-        try {
-            FileDescriptor fileDescriptor = new FileDescriptor();
-            fileDescriptor.setUser(request.getAttribute(USER_ID).toString());
-            fileDescriptor.setFilePath(request.getAttribute(FILE_NAME).toString());
-            fileDescriptor.setFileSize(Long.parseLong(request.getAttribute(FILE_SIZE).toString()));
-            fileDescriptor.setFileLastModified(System.currentTimeMillis() / 1000);
-            fileDescriptor.setOperation(Operation.UPLOAD.name().toLowerCase());
-            fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
-                    new EncryptedIntegrity(MD5.toLowerCase(), request.getAttribute(MD5).toString())
-            });
-            publishMessage(fileDescriptor);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+        FileDescriptor fileDescriptor = new FileDescriptor();
+        fileDescriptor.setUser(request.getAttribute(EGA_USERNAME).toString());
+        fileDescriptor.setFilePath(request.getAttribute(FILE_NAME).toString());
+        fileDescriptor.setFileSize(Long.parseLong(request.getAttribute(FILE_SIZE).toString()));
+        fileDescriptor.setFileLastModified(System.currentTimeMillis() / 1000);
+        fileDescriptor.setOperation(Operation.UPLOAD.name().toLowerCase());
+        fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
+                new EncryptedIntegrity(MD5.toLowerCase(), request.getAttribute(MD5).toString())
+        });
+        publishMessage(fileDescriptor);
     }
 
     private void publishMessage(FileDescriptor fileDescriptor) {

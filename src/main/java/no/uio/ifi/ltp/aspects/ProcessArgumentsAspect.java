@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 @Component
 public class ProcessArgumentsAspect {
 
+    public static final String EGA_USERNAME = "egaUsername";
+    public static final String ELIXIR_ID = "elixirId";
     public static final String FILE_NAME = "fileName";
     public static final String UPLOAD_ID = "uploadId";
     public static final String CHUNK = "chunk";

@@ -33,7 +33,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.springframework.amqp.support.AmqpHeaders.USER_ID;
+import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.EGA_USERNAME;
+import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.ELIXIR_ID;
 
 /**
  * AOP aspect that handles authentication and authorization.
@@ -83,12 +84,13 @@ public class AAIAspect {
             DecodedJWT decodedJWT = JWT.decode(jwtToken);
             List<Visa> controlledAccessGrantsVisas = getVisas(jwtToken, decodedJWT);
             log.info("Elixir user {} authenticated and provided following valid GA4GH Visas: {}", decodedJWT.getSubject(), controlledAccessGrantsVisas);
+            request.setAttribute(ELIXIR_ID, decodedJWT.getSubject());
             String[] usernameAndPassword = new String(Base64.getDecoder().decode(optionalBasicAuth.get().replace("Basic ", ""))).split(":");
             if (!cegaAuth(usernameAndPassword[0], usernameAndPassword[1])) {
                 throw new AuthenticationException("EGA authentication failed");
             }
             log.info("EGA user {} authenticated", usernameAndPassword[0]);
-            request.setAttribute(USER_ID, decodedJWT.getSubject());
+            request.setAttribute(EGA_USERNAME, usernameAndPassword[0]);
             return joinPoint.proceed();
         } catch (Exception e) {
             log.info(e.getMessage(), e);
