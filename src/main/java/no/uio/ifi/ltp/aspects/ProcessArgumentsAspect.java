@@ -29,6 +29,7 @@ public class ProcessArgumentsAspect {
     public static final String CHUNK = "chunk";
     public static final String FILE_SIZE = "fileSize";
     public static final String MD5 = "md5";
+    public static final String SHA256 = "sha256";
 
     @Autowired
     private HttpServletRequest request;
@@ -65,6 +66,9 @@ public class ProcessArgumentsAspect {
                             break;
                         case MD5:
                             request.setAttribute(MD5, arguments[i]);
+                            break;
+                        case SHA256:
+                            request.setAttribute(SHA256, arguments[i]);
                             break;
                     }
                 }

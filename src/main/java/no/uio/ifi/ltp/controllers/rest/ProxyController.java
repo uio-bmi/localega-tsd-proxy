@@ -51,7 +51,8 @@ public class ProxyController {
                                     @RequestParam(value = "uploadId", required = false) String uploadId,
                                     @RequestParam(value = "chunk", required = false) String chunk,
                                     @RequestParam(value = "fileSize", required = false) String fileSize,
-                                    @RequestParam(value = "md5") String md5) throws IOException {
+                                    @RequestParam(value = "md5") String md5,
+                                    @RequestParam(value = "sha256") String sha256) throws IOException {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
 
         byte[] chunkBytes = inputStream.readAllBytes();

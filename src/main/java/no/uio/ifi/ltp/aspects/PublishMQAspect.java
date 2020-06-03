@@ -80,7 +80,7 @@ public class PublishMQAspect {
         fileDescriptor.setFileLastModified(System.currentTimeMillis() / 1000);
         fileDescriptor.setOperation(Operation.UPLOAD.name().toLowerCase());
         fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
-                new EncryptedIntegrity(MD5.toLowerCase(), request.getAttribute(MD5).toString())
+                new EncryptedIntegrity(SHA256.toLowerCase(), request.getAttribute(SHA256).toString())
         });
         publishMessage(fileDescriptor);
     }
