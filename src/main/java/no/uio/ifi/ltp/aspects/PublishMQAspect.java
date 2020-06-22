@@ -47,20 +47,19 @@ public class PublishMQAspect {
     private String routingKey;
 
     /**
-     * Publishes <code>FileDescriptor</code> to the MQ.
+     * Publishes <code>FileDescriptor</code> to the MQ upon file uploading.
      *
      * @param result Object returned by the proxied method.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @AfterReturning(pointcut = "execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(..))", returning = "result")
-    public void publishMessage(Object result) {
+    public void publishUpload(Object result) {
         ResponseEntity genericResponseEntity = (ResponseEntity) result;
         if (!String.valueOf(Objects.requireNonNull(genericResponseEntity).getStatusCode()).startsWith("20")) {
             log.error(String.valueOf(genericResponseEntity.getStatusCode()));
             log.error(String.valueOf(genericResponseEntity.getBody()));
             return;
         }
-
         ResponseEntity<TSDFileAPIResponse> tsdResponseEntity = (ResponseEntity<TSDFileAPIResponse>) result;
         TSDFileAPIResponse body = tsdResponseEntity.getBody();
         if (!String.valueOf(Objects.requireNonNull(body).getStatusCode()).startsWith("20")) {
@@ -82,6 +81,35 @@ public class PublishMQAspect {
         fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
                 new EncryptedIntegrity(SHA256.toLowerCase(), request.getAttribute(SHA256).toString())
         });
+        publishMessage(fileDescriptor);
+    }
+
+    /**
+     * Publishes <code>FileDescriptor</code> to the MQ upon file removal.
+     *
+     * @param result Object returned by the proxied method.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @AfterReturning(pointcut = "execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.deleteFile(..))", returning = "result")
+    public void publishRemove(Object result) {
+        ResponseEntity genericResponseEntity = (ResponseEntity) result;
+        if (!String.valueOf(Objects.requireNonNull(genericResponseEntity).getStatusCode()).startsWith("20")) {
+            log.error(String.valueOf(genericResponseEntity.getStatusCode()));
+            log.error(String.valueOf(genericResponseEntity.getBody()));
+            return;
+        }
+        ResponseEntity<TSDFileAPIResponse> tsdResponseEntity = (ResponseEntity<TSDFileAPIResponse>) result;
+        TSDFileAPIResponse body = tsdResponseEntity.getBody();
+        if (!String.valueOf(Objects.requireNonNull(body).getStatusCode()).startsWith("20")) {
+            log.error(String.valueOf(body.getStatusCode()));
+            log.error(String.valueOf(body.getStatusText()));
+            return;
+        }
+
+        FileDescriptor fileDescriptor = new FileDescriptor();
+        fileDescriptor.setUser(request.getAttribute(EGA_USERNAME).toString());
+        fileDescriptor.setFilePath(request.getAttribute(FILE_NAME).toString());
+        fileDescriptor.setOperation(Operation.REMOVE.name().toLowerCase());
         publishMessage(fileDescriptor);
     }
 
