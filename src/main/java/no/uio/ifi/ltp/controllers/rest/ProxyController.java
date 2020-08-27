@@ -7,12 +7,11 @@ import no.uio.ifi.tc.model.pojo.ResumableUpload;
 import no.uio.ifi.tc.model.pojo.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -27,6 +26,9 @@ public class ProxyController {
 
     @Value("${tsd.app-id}")
     private String tsdAppId;
+
+    @Value("${tsd.app-out-id}")
+    private String tsdAppOutId;
 
     @Autowired
     private TSDFileAPIClient tsdFileAPIClient;
@@ -82,16 +84,30 @@ public class ProxyController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/stream/{fileName}")
+    public ResponseEntity<?> stream(HttpServletResponse response,
+                                    @RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
+                                    @PathVariable("fileName") String fileName) throws IOException {
+        Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
+        tsdFileAPIClient.downloadFile(token.getToken(), tsdAppOutId, fileName, response.getOutputStream());
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        responseHeaders.setContentDisposition(ContentDisposition.builder("attachment").filename(fileName).build());
+        return ResponseEntity.ok().headers(responseHeaders).build();
+    }
+
     /**
-     * Lists uploaded files.
+     * Lists uploaded or exported files.
      *
      * @param bearerAuthorization Elixir AAI token.
+     * @param inbox               <code>true</code> for listing inbox, <code>false</code> for listing outbox.
      * @return List of uploaded files.
      */
     @GetMapping("/files")
-    public ResponseEntity<?> getFiles(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization) {
+    public ResponseEntity<?> getFiles(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
+                                      @RequestParam(value = "inbox", defaultValue = "true") boolean inbox) {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
-        return ResponseEntity.ok(tsdFileAPIClient.listFiles(token.getToken(), tsdAppId));
+        return ResponseEntity.ok(tsdFileAPIClient.listFiles(token.getToken(), inbox ? tsdAppId : tsdAppOutId));
     }
 
     /**
