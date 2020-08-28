@@ -85,15 +85,13 @@ public class ProxyController {
     }
 
     @GetMapping("/stream/{fileName}")
-    public ResponseEntity<?> stream(HttpServletResponse response,
+    public void stream(HttpServletResponse response,
                                     @RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
                                     @PathVariable("fileName") String fileName) throws IOException {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
+        response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM.toString());
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.builder("attachment").filename(fileName).build().toString());
         tsdFileAPIClient.downloadFile(token.getToken(), tsdAppOutId, fileName, response.getOutputStream());
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        responseHeaders.setContentDisposition(ContentDisposition.builder("attachment").filename(fileName).build());
-        return ResponseEntity.ok().headers(responseHeaders).build();
     }
 
     /**
