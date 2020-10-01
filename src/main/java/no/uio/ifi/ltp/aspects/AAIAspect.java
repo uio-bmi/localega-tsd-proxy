@@ -14,6 +14,7 @@ import org.apache.http.auth.AuthenticationException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
@@ -61,22 +62,17 @@ public class AAIAspect {
     protected CEGACredentialsProvider cegaCredentialsProvider;
 
     /**
-     * Retrieves GA4GH Visas from the JWT token provided. Checks CEGA credentials. Decides on whether to allow the request or not.
+     * Checks GA4GH Visas. Decides on whether to allow the request or not.
      *
      * @param joinPoint Join point referencing proxied method.
      * @return Either the object, returned by the proxied method, or HTTP error response.
      * @throws Throwable In case of error.
      */
     @Around("execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.*(..))")
-    public Object authenticate(ProceedingJoinPoint joinPoint) throws Throwable {
+    public Object authenticateElixirAAI(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<String> optionalBearerAuth = getBearerAuth();
         if (optionalBearerAuth.isEmpty()) {
             log.info("Authentication attempt without Elixir AAI token provided");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Optional<String> optionalBasicAuth = getBasicAuth();
-        if (optionalBasicAuth.isEmpty()) {
-            log.info("Authentication attempt without EGA credentials provided");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String jwtToken = optionalBearerAuth.get().replace("Bearer ", "");
@@ -85,6 +81,34 @@ public class AAIAspect {
             List<Visa> controlledAccessGrantsVisas = getVisas(jwtToken, decodedJWT);
             log.info("Elixir user {} authenticated and provided following valid GA4GH Visas: {}", decodedJWT.getSubject(), controlledAccessGrantsVisas);
             request.setAttribute(ELIXIR_ID, decodedJWT.getSubject());
+            return joinPoint.proceed();
+        } catch (Exception e) {
+            log.info(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Checks CEGA credentials. Decides on whether to allow the request or not.
+     *
+     * @param joinPoint Join point referencing proxied method.
+     * @return Either the object, returned by the proxied method, or HTTP error response.
+     * @throws Throwable In case of error.
+     */
+    @Around("execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.*(..)) && " +
+            "!execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(javax.servlet.http.HttpServletResponse, String, String))") // we don't need CEGA auth for Data Out endpoints
+    public Object authenticateCEGA(ProceedingJoinPoint joinPoint) throws Throwable {
+        if (((MethodSignature) joinPoint.getSignature()).getMethod().getName().equalsIgnoreCase("getFiles")) {
+            if (Boolean.FALSE.equals(joinPoint.getArgs()[1])) {
+                return joinPoint.proceed(); // skip it for listing files in the outbox
+            }
+        }
+        Optional<String> optionalBasicAuth = getBasicAuth();
+        if (optionalBasicAuth.isEmpty()) {
+            log.info("Authentication attempt without EGA credentials provided");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
             String[] usernameAndPassword = new String(Base64.getDecoder().decode(optionalBasicAuth.get().replace("Basic ", ""))).split(":");
             if (!cegaAuth(usernameAndPassword[0], usernameAndPassword[1])) {
                 throw new AuthenticationException("EGA authentication failed");
