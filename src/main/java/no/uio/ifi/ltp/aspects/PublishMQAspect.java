@@ -52,7 +52,7 @@ public class PublishMQAspect {
      * @param result Object returned by the proxied method.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    @AfterReturning(pointcut = "execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(..))", returning = "result")
+    @AfterReturning(pointcut = "execution(@org.springframework.web.bind.annotation.PatchMapping public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(..))", returning = "result")
     public void publishUpload(Object result) {
         ResponseEntity genericResponseEntity = (ResponseEntity) result;
         if (!String.valueOf(Objects.requireNonNull(genericResponseEntity).getStatusCode()).startsWith("20")) {
