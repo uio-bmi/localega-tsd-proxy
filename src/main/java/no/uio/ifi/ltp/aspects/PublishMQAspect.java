@@ -81,7 +81,7 @@ public class PublishMQAspect {
         FileDescriptor fileDescriptor = new FileDescriptor();
         fileDescriptor.setUser(request.getAttribute(EGA_USERNAME).toString());
         String fileName = request.getAttribute(FILE_NAME).toString();
-        fileDescriptor.setFilePath(String.format(tsdInboxLocation, tsdAppId, fileDescriptor.getUser()) + fileName);
+        fileDescriptor.setFilePath(String.format(tsdInboxLocation, tsdAppId, fileDescriptor.getUser()) + fileName); // absolute path to the file
         fileDescriptor.setFileSize(Long.parseLong(request.getAttribute(FILE_SIZE).toString()));
         fileDescriptor.setFileLastModified(System.currentTimeMillis() / 1000);
         fileDescriptor.setOperation(Operation.UPLOAD.name().toLowerCase());
