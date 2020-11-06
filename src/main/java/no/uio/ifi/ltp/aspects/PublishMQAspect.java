@@ -40,6 +40,12 @@ public class PublishMQAspect {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    @Value("${tsd.app-id}")
+    private String tsdAppId;
+
+    @Value("${tsd.inbox-location}")
+    private String tsdInboxLocation;
+
     @Value("${mq.exchange}")
     private String exchange;
 
@@ -74,7 +80,8 @@ public class PublishMQAspect {
 
         FileDescriptor fileDescriptor = new FileDescriptor();
         fileDescriptor.setUser(request.getAttribute(EGA_USERNAME).toString());
-        fileDescriptor.setFilePath(request.getAttribute(FILE_NAME).toString());
+        String fileName = request.getAttribute(FILE_NAME).toString();
+        fileDescriptor.setFilePath(String.format(tsdInboxLocation, tsdAppId, fileDescriptor.getUser()) + fileName);
         fileDescriptor.setFileSize(Long.parseLong(request.getAttribute(FILE_SIZE).toString()));
         fileDescriptor.setFileLastModified(System.currentTimeMillis() / 1000);
         fileDescriptor.setOperation(Operation.UPLOAD.name().toLowerCase());
