@@ -37,7 +37,7 @@ ga4gh:
     public-key-path: ${VISA_PUBLIC_KEY_PATH:/etc/ega/jwt/visa.pem}
 
 cega:
-  auth-url: ${CEGA_AUTH_URL:https://egatest.crg.eu/lega/v1/legas/users/%s?idType=username}
+  auth-url: ${CEGA_AUTH_URL}
   username: ${CEGA_USERNAME}
   password: ${CEGA_PASSWORD}
 
