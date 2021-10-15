@@ -122,6 +122,11 @@
             <name>jcenter</name>
             <url>https://jcenter.bintray.com</url>
         </repository>
+        <repository>
+            <id>github-uio-bmi-TSD-File-API-client</id>
+            <name>uio-bmi-TSD-File-API-client</name>
+            <url>https://maven.pkg.github.com/uio-bmi/TSD-File-API-client</url>
+        </repository>
     </repositories>
 
 </project>
