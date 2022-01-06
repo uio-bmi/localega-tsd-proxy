@@ -118,12 +118,12 @@
 
     <repositories>
         <repository>
-            <id>github</id>
+            <id>github-clearinghouse</id>
             <name>elixir-oslo-clearinghouse</name>
             <url>https://maven.pkg.github.com/elixir-oslo/clearinghouse</url>
         </repository>
         <repository>
-            <id>github</id>
+            <id>github-tsd-file-api-client</id>
             <name>uio-bmi-tsd-file-api-client</name>
             <url>https://maven.pkg.github.com/uio-bmi/tsd-file-api-client</url>
         </repository>
