@@ -5,16 +5,15 @@ import no.uio.ifi.tc.TSDFileAPIClient;
 import no.uio.ifi.tc.model.pojo.Chunk;
 import no.uio.ifi.tc.model.pojo.ResumableUpload;
 import no.uio.ifi.tc.model.pojo.Token;
+import no.uio.ifi.tc.model.pojo.TSDFiles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-
 /**
  * REST controller for proxying TSD File API requests.
  */
@@ -56,32 +55,37 @@ public class ProxyController {
                                     @RequestParam(value = "md5", required = false) String md5,
                                     @RequestParam(value = "sha256", required = false) String sha256) throws IOException {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
-
         byte[] chunkBytes = inputStream.readAllBytes();
-
-        // new upload
-        if (StringUtils.isEmpty(uploadId)) {
-            Chunk response = tsdFileAPIClient.initializeResumableUpload(token.getToken(), tsdAppId, chunkBytes, fileName);
-            return validateChunkChecksum(token, response, md5);
-        }
-
-        // finalizing upload
-        if ("end".equalsIgnoreCase(chunk)) {
-            return ResponseEntity.ok(tsdFileAPIClient.finalizeResumableUpload(token.getToken(), tsdAppId, uploadId));
-        }
-
-        // uploading an intermediate chunk
-        Chunk response = tsdFileAPIClient.uploadChunk(token.getToken(), tsdAppId, Long.parseLong(chunk), chunkBytes, uploadId);
-        return validateChunkChecksum(token, response, md5);
-    }
-
-    private ResponseEntity<?> validateChunkChecksum(Token token, Chunk response, String md5) {
-        ResumableUpload resumableUpload = tsdFileAPIClient.getResumableUpload(token.getToken(), tsdAppId, response.getId()).orElseThrow();
-        if (!md5.equalsIgnoreCase(resumableUpload.getMd5Sum())) {
-            tsdFileAPIClient.deleteResumableUpload(token.getToken(), tsdAppId, response.getId());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Checksum mismatch. Resumable upload interrrupted and can't be resumed. Please, re-upload the whole file.");
-        }
+        Chunk response = tsdFileAPIClient.initializeResumableUpload(token.getToken(), tsdAppId, chunkBytes, fileName);
+        response.setStatusCode(200);
+        response.setId(token.getToken());
         return ResponseEntity.ok(response);
+
+    //     byte[] chunkBytes = inputStream.readAllBytes();
+
+    //     // new upload
+    //     if (StringUtils.isEmpty(uploadId)) {
+    //         Chunk response = tsdFileAPIClient.initializeResumableUpload(token.getToken(), tsdAppId, chunkBytes, fileName);
+    //         return validateChunkChecksum(token, response, md5);
+    //     }
+
+    //     // finalizing upload
+    //     if ("end".equalsIgnoreCase(chunk)) {
+    //         return ResponseEntity.ok(tsdFileAPIClient.finalizeResumableUpload(token.getToken(), tsdAppId, uploadId));
+    //     }
+
+    //     // uploading an intermediate chunk
+    //     Chunk response = tsdFileAPIClient.uploadChunk(token.getToken(), tsdAppId, Long.parseLong(chunk), chunkBytes, uploadId);
+    //     return validateChunkChecksum(token, response, md5);
+    // }
+
+    // private ResponseEntity<?> validateChunkChecksum(Token token, Chunk response, String md5) {
+    //     ResumableUpload resumableUpload = tsdFileAPIClient.getResumableUpload(token.getToken(), tsdAppId, response.getId()).orElseThrow();
+    //     if (!md5.equalsIgnoreCase(resumableUpload.getMd5Sum())) {
+    //         tsdFileAPIClient.deleteResumableUpload(token.getToken(), tsdAppId, response.getId());
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Checksum mismatch. Resumable upload interrrupted and can't be resumed. Please, re-upload the whole file.");
+    //     }
+    //     return ResponseEntity.ok(response);
     }
 
     @GetMapping("/stream/{fileName}")
@@ -105,7 +109,7 @@ public class ProxyController {
     public ResponseEntity<?> getFiles(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
                                       @RequestParam(value = "inbox", defaultValue = "true") boolean inbox) {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
-        return ResponseEntity.ok(tsdFileAPIClient.listFiles(token.getToken(), inbox ? tsdAppId : tsdAppOutId));
+        return ResponseEntity.ok(new TSDFiles());
     }
 
     /**
