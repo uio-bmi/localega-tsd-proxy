@@ -57,7 +57,3 @@ tsd:
 mq:
   exchange: ${EXCHANGE:cega}
   routing-key: ${ROUTING_KEY:files.inbox}
-
-spring:
-  mvc.static-path-pattern: /**
-  resources.static-locations: ${HTML_PATH:file:html}
