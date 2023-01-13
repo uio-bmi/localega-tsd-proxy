@@ -18,6 +18,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@9ab158e8597f3b310480b9a69402b419bc03dbd5
         with:
+          args: --security-checks vuln
           image-ref: 'ghcr.io/${{ github.repository }}:latest'
           format: 'sarif'
           output: 'trivy-results.sarif'
