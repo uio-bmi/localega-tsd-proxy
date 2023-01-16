@@ -1,7 +1,6 @@
 package no.uio.ifi.ltp.authentication;
 
 import no.uio.ifi.ltp.dto.Credentials;
-import no.uio.ifi.ltp.dto.ResponseHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -49,8 +48,10 @@ public class CEGACredentialsProvider {
         URL url = new URL(String.format(cegaAuthURL + "%s?idType=username", username));
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((cegaUsername + ":" + cegaPassword).getBytes()));
-        ResponseEntity<ResponseHolder> response = restTemplate.exchange(url.toURI(), HttpMethod.GET, new HttpEntity<>(headers), ResponseHolder.class);
-        return Objects.requireNonNull(response.getBody()).getResultsHolder().getCredentials().iterator().next();
+        ResponseEntity<Credentials> response = restTemplate.exchange(url.toURI(), HttpMethod.GET,
+                new HttpEntity<>(headers),
+                Credentials.class);
+        return Objects.requireNonNull(response.getBody());
     }
 
 }
