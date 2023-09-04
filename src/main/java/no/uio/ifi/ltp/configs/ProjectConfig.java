@@ -100,7 +100,7 @@ public class ProjectConfig {
                 .host(tsdHost)
                 .project(tsdProject)
                 .accessKey(tsdAccessKey);
-        if (!StringUtils.isEmpty(tsdRootCA) && !StringUtils.isEmpty(tsdRootCAPassword)) {
+        if (StringUtils.hasLength(tsdRootCA) && StringUtils.hasLength(tsdRootCAPassword)) {
             X509TrustManager trustManager = trustManagerForCertificates(Files.newInputStream(Path.of(tsdRootCA)), tsdRootCAPassword);
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{trustManager}, null);
