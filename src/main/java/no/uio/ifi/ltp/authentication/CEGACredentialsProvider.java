@@ -23,8 +23,7 @@ import java.util.Objects;
 @Component
 public class CEGACredentialsProvider {
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     @Value("${cega.auth-url}")
     private String cegaAuthURL;
@@ -34,6 +33,11 @@ public class CEGACredentialsProvider {
 
     @Value("${cega.password}")
     private String cegaPassword;
+
+    @Autowired
+    public CEGACredentialsProvider(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     /**
      * Gets CEGA credentials from CEGA auth endpoint, the method is cached.

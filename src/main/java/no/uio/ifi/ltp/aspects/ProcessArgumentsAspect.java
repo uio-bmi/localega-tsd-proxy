@@ -31,8 +31,12 @@ public class ProcessArgumentsAspect {
     public static final String MD5 = "md5";
     public static final String SHA256 = "sha256";
 
+    private final HttpServletRequest request;
+
     @Autowired
-    private HttpServletRequest request;
+    public ProcessArgumentsAspect(HttpServletRequest request) {
+        this.request = request;
+    }
 
     /**
      * Converts HTTP request parameters to request attributes.

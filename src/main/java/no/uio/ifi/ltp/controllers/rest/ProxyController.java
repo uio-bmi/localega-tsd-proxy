@@ -30,8 +30,12 @@ public class ProxyController {
     @Value("${tsd.app-out-id}")
     private String tsdAppOutId;
 
+    private final TSDFileAPIClient tsdFileAPIClient;
+
     @Autowired
-    private TSDFileAPIClient tsdFileAPIClient;
+    public ProxyController(TSDFileAPIClient tsdFileAPIClient) {
+        this.tsdFileAPIClient = tsdFileAPIClient;
+    }
 
     /**
      * Streams the file to the TSD File API.

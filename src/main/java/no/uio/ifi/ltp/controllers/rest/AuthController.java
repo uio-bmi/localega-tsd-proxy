@@ -18,8 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class AuthController {
 
+    private final OAuth2AuthorizedClientService authorizedClientService;
+
     @Autowired
-    private OAuth2AuthorizedClientService authorizedClientService;
+    public AuthController(OAuth2AuthorizedClientService authorizedClientService) {
+        this.authorizedClientService = authorizedClientService;
+    }
 
     /**
      * Returns access token.

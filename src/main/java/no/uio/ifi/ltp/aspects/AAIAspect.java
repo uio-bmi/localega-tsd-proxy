@@ -55,11 +55,14 @@ public class AAIAspect {
     @Value("${ga4gh.visa.public-key-path}")
     private String visaPublicKeyPath;
 
-    @Autowired
-    protected HttpServletRequest request;
+    protected final HttpServletRequest request;
+    protected final CEGACredentialsProvider cegaCredentialsProvider;
 
     @Autowired
-    protected CEGACredentialsProvider cegaCredentialsProvider;
+    public AAIAspect(HttpServletRequest request, CEGACredentialsProvider cegaCredentialsProvider) {
+        this.request = request;
+        this.cegaCredentialsProvider = cegaCredentialsProvider;
+    }
 
     /**
      * Checks GA4GH Visas. Decides on whether to allow the request or not.

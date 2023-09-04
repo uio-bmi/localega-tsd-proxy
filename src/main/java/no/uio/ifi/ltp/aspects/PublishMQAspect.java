@@ -31,14 +31,9 @@ import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.*;
 @Component
 public class PublishMQAspect {
 
-    @Autowired
-    private HttpServletRequest request;
-
-    @Autowired
-    private Gson gson;
-
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private final HttpServletRequest request;
+    private final Gson gson;
+    private final RabbitTemplate rabbitTemplate;
 
     @Value("${tsd.project}")
     private String tsdProjectId;
@@ -51,6 +46,13 @@ public class PublishMQAspect {
 
     @Value("${mq.routing-key}")
     private String routingKey;
+
+    @Autowired
+    public PublishMQAspect(HttpServletRequest request, Gson gson, RabbitTemplate rabbitTemplate) {
+        this.request = request;
+        this.gson = gson;
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     /**
      * Publishes <code>FileDescriptor</code> to the MQ upon file uploading.

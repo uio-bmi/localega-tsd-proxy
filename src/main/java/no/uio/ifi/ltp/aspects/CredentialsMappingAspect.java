@@ -24,11 +24,14 @@ import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.ELIXIR_ID;
 @Component
 public class CredentialsMappingAspect {
 
-    @Autowired
-    private HttpServletRequest request;
+    private final HttpServletRequest request;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    public CredentialsMappingAspect(HttpServletRequest request, JdbcTemplate jdbcTemplate) {
+        this.request = request;
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     /**
      * Stores EGA username to Elixir ID mapping.
