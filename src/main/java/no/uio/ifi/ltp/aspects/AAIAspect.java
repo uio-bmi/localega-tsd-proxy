@@ -25,7 +25,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -96,7 +96,7 @@ public class AAIAspect {
      * @throws Throwable In case of error.
      */
     @Around("execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.*(..)) && " +
-            "!execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(javax.servlet.http.HttpServletResponse, String, String))") // we don't need CEGA auth for Data Out endpoints
+            "!execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(jakarta.servlet.http.HttpServletResponse, String, String))") // we don't need CEGA auth for Data Out endpoints
     public Object authenticateCEGA(ProceedingJoinPoint joinPoint) throws Throwable {
         if (((MethodSignature) joinPoint.getSignature()).getMethod().getName().equalsIgnoreCase("getFiles")) {
             if (Boolean.FALSE.equals(joinPoint.getArgs()[1])) {

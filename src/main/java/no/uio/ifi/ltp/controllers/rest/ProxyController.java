@@ -11,7 +11,7 @@ import org.springframework.http.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -60,7 +60,7 @@ public class ProxyController {
         byte[] chunkBytes = inputStream.readAllBytes();
 
         // new upload
-        if (StringUtils.isEmpty(uploadId)) {
+        if (!StringUtils.hasLength(uploadId)) {
             Chunk response = tsdFileAPIClient.initializeResumableUpload(token.getToken(), tsdAppId, chunkBytes, fileName);
             return validateChunkChecksum(token, response, md5);
         }
@@ -133,7 +133,7 @@ public class ProxyController {
     public ResponseEntity<?> getResumables(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
                                            @RequestParam(value = "uploadId", required = false) String uploadId) {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
-        if (StringUtils.isEmpty(uploadId)) {
+        if (!StringUtils.hasLength(uploadId)) {
             return ResponseEntity.ok(tsdFileAPIClient.listResumableUploads(token.getToken(), tsdAppId));
         } else {
             return ResponseEntity.ok(tsdFileAPIClient.getResumableUpload(token.getToken(), tsdAppId, uploadId));
