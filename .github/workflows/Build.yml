@@ -43,6 +43,9 @@ jobs:
               "password": "${{ secrets.GITHUB_TOKEN }}"
             }]
 
+      - name: Show pom.xml
+        run: cat pom.xml
+
       - name: Build with Maven
         run: mvn -B clean package -DskipTests --file pom.xml
 
