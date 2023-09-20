@@ -34,13 +34,13 @@ jobs:
         servers: |
           [{
             "id":"github-clearinghouse",
-            "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-            "password": "${{ secrets.GH_TOKEN_FOR_MAVEN_ACTIONS }}"
+            "username": "${{ github.actor }}",
+            "password": "${{ secrets.GITHUB_TOKEN }}"
           },
           {
             "id":"github-tsd-file-api-client",
-            "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-            "password": "${{ secrets.GH_TOKEN_FOR_MAVEN_ACTIONS }}"
+            "username": "${{ github.actor }}",
+            "password": "${{ secrets.GITHUB_TOKEN }}"
           }]
 
     - name: Build with Maven
