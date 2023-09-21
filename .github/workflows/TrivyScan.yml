@@ -1,8 +1,9 @@
 name: Trivy vulnerability scan
 
 on:
-  schedule:
-    - cron: '0 7 * * *'
+  push:
+#  schedule:
+#    - cron: '0 7 * * *'
 
 jobs:
   scan:
