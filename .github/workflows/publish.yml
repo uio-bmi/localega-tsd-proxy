@@ -2,7 +2,7 @@ name: Bump version and publish to ghcr.io
 on:
   push:
     branches:
-    - master
+      - master
 
   workflow_dispatch:
 
@@ -15,17 +15,17 @@ jobs:
       new_tag: ${{ steps.bump_tag.outputs.new_tag }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: '1'
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '1'
 
-    - name: Bump version and push tag
-      id: bump_tag
-      uses: anothrNick/github-tag-action@1.36.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        WITH_V: true
-        DEFAULT_BUMP: patch
+      - name: Bump version and push tag
+        id: bump_tag
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: patch
 
   push_to_registry:
     needs: tag
@@ -58,13 +58,13 @@ jobs:
           servers: |
             [{
               "id":"github-clearinghouse",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_TOKEN_FOR_MAVEN_ACTIONS }}"
+              "username": "${{ github.actor }}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
             },
             {
               "id":"github-tsd-file-api-client",
-              "username": "${{ secrets.GH_USER_FOR_MAVEN_ACTIONS }}",
-              "password": "${{ secrets.GH_TOKEN_FOR_MAVEN_ACTIONS }}"
+              "username": "${{ github.actor }}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
             }]
 
       - name: Copy settings.xml to project root
