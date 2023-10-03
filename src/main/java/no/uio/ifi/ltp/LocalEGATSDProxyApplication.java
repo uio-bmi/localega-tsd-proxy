@@ -64,7 +64,8 @@ public class LocalEGATSDProxyApplication {
                 requiresChannel(channel -> channel.anyRequest().requiresSecure())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(entryPoint))
                 .csrf(AbstractHttpConfigurer::disable)
-                .securityMatcher("/token.html", "/token", "/user", "/oauth2/authorization/elixir-aai").authorizeHttpRequests(request -> request
+                .securityMatcher("/token.html", "/token", "/user", "/oauth2/authorization/elixir-aai", "/oidc-protected")
+                .authorizeHttpRequests(request -> request
                         .requestMatchers("/token.html").authenticated()
                         .requestMatchers("/token").authenticated()
                         .requestMatchers("/user").authenticated())
