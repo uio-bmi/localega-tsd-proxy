@@ -17,7 +17,7 @@ FROM eclipse-temurin:17-jre-alpine
 
 RUN apk add --no-cache ca-certificates
 
-COPY --from=builder /target/*-SNAPSHOT.jar /localega-tsd-proxy.jar
+COPY --from=builder /target/localega-*.jar /localega-tsd-proxy.jar
 
 RUN addgroup -g 1000 lega && \
     adduser -D -u 1000 -G lega lega
