@@ -1,13 +1,13 @@
-package no.uio.ifi.ltp.aspects;
+package no.elixir.fega.ltp.aspects;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
+import no.elixir.fega.ltp.authentication.CEGACredentialsProvider;
 import no.uio.ifi.clearinghouse.Clearinghouse;
 import no.uio.ifi.clearinghouse.model.Visa;
 import no.uio.ifi.clearinghouse.model.VisaType;
-import no.uio.ifi.ltp.authentication.CEGACredentialsProvider;
-import no.uio.ifi.ltp.dto.Credentials;
+import no.elixir.fega.ltp.dto.Credentials;
 import org.apache.commons.codec.digest.Crypt;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.AuthenticationException;
@@ -33,9 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.EGA_USERNAME;
-import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.ELIXIR_ID;
 
 /**
  * AOP aspect that handles authentication and authorization.
@@ -68,7 +65,7 @@ public class AAIAspect {
      * @return Either the object, returned by the proxied method, or HTTP error response.
      * @throws Throwable In case of error.
      */
-    @Around("execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.*(..))")
+    @Around("execution(public * no.elixir.fega.ltp.controllers.rest.ProxyController.*(..))")
     public Object authenticateElixirAAI(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<String> optionalBearerAuth = getBearerAuth();
         if (optionalBearerAuth.isEmpty()) {
@@ -80,7 +77,7 @@ public class AAIAspect {
             DecodedJWT decodedJWT = JWT.decode(jwtToken);
             List<Visa> controlledAccessGrantsVisas = getVisas(jwtToken, decodedJWT);
             log.info("Elixir user {} authenticated and provided following valid GA4GH Visas: {}", decodedJWT.getSubject(), controlledAccessGrantsVisas);
-            request.setAttribute(ELIXIR_ID, decodedJWT.getSubject());
+            request.setAttribute(ProcessArgumentsAspect.ELIXIR_ID, decodedJWT.getSubject());
             return joinPoint.proceed();
         } catch (Exception e) {
             log.info(e.getMessage(), e);
@@ -95,8 +92,8 @@ public class AAIAspect {
      * @return Either the object, returned by the proxied method, or HTTP error response.
      * @throws Throwable In case of error.
      */
-    @Around("execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.*(..)) && " +
-            "!execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(jakarta.servlet.http.HttpServletResponse, String, String))") // we don't need CEGA auth for Data Out endpoints
+    @Around("execution(public * no.elixir.fega.ltp.controllers.rest.ProxyController.*(..)) && " +
+            "!execution(public * no.elixir.fega.ltp.controllers.rest.ProxyController.stream(jakarta.servlet.http.HttpServletResponse, String, String))") // we don't need CEGA auth for Data Out endpoints
     public Object authenticateCEGA(ProceedingJoinPoint joinPoint) throws Throwable {
         if (((MethodSignature) joinPoint.getSignature()).getMethod().getName().equalsIgnoreCase("getFiles")) {
             if (Boolean.FALSE.equals(joinPoint.getArgs()[1])) {
@@ -114,7 +111,7 @@ public class AAIAspect {
                 throw new AuthenticationException("EGA authentication failed");
             }
             log.info("EGA user {} authenticated", usernameAndPassword[0]);
-            request.setAttribute(EGA_USERNAME, usernameAndPassword[0]);
+            request.setAttribute(ProcessArgumentsAspect.EGA_USERNAME, usernameAndPassword[0]);
             return joinPoint.proceed();
         } catch (Exception e) {
             log.info(e.getMessage(), e);

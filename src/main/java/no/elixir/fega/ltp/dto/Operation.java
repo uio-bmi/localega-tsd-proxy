@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.dto;
+package no.elixir.fega.ltp.dto;
 
 /**
  * Type of file event (created, moved, removed, etc.)

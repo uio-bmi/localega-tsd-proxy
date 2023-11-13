@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.aspects;
+package no.elixir.fega.ltp.aspects;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.EGA_USERNAME;
-import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.ELIXIR_ID;
+import static no.elixir.fega.ltp.aspects.ProcessArgumentsAspect.EGA_USERNAME;
+import static no.elixir.fega.ltp.aspects.ProcessArgumentsAspect.ELIXIR_ID;
 
 /**
  * AOP aspect that maps EGA username with Elixir ID.
@@ -35,7 +35,7 @@ public class CredentialsMappingAspect {
      *
      * @param result Object returned by the proxied method.
      */
-    @AfterReturning(pointcut = "execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(..))", returning = "result")
+    @AfterReturning(pointcut = "execution(public * no.elixir.fega.ltp.controllers.rest.ProxyController.stream(..))", returning = "result")
     public void publishMessage(Object result) {
         String egaUsername = request.getAttribute(EGA_USERNAME).toString();
         String elixirId = request.getAttribute(ELIXIR_ID).toString();

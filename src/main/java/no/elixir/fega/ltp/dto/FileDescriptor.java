@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.dto;
+package no.elixir.fega.ltp.dto;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;

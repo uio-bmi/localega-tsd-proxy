@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp;
+package no.elixir.fega.ltp;
 
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.tc.TSDFileAPIClient;
