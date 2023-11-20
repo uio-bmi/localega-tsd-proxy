@@ -1,7 +1,8 @@
 package no.uio.ifi.ltp.aspects;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.clearinghouse.Clearinghouse;
 import no.uio.ifi.clearinghouse.model.Visa;
@@ -15,10 +16,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.bouncycastle.asn1.pkcs.RSAPublicKey;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
@@ -31,14 +28,11 @@ import org.springframework.util.ObjectUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.PublicKey;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -85,25 +79,18 @@ public class AAIAspect {
         }
         String jwtToken = optionalBearerAuth.get().replace("Bearer ", "");
         try {
-            //DecodedJWT decodedJWT = JWT.decode(jwtToken);
-            var key = readX509PublicKey(new File(visaPublicKeyPath));
-            Claims claims = (Claims) Jwts.parser().verifyWith((PublicKey) key).build().parseSignedClaims(jwtToken);
-            List<Visa> controlledAccessGrantsVisas = getVisas(jwtToken, claims);
-            log.info("Elixir user {} authenticated and provided following valid GA4GH Visas: {}", claims.getSubject(), controlledAccessGrantsVisas);
-            request.setAttribute(ELIXIR_ID, claims.getSubject());
+            var tokenArray = jwtToken.split("[.]");
+            byte[] decodedHeader = Base64.getUrlDecoder().decode(tokenArray[0]);
+            String decodedHeaderString = new String(decodedHeader);
+            Gson gson = new Gson();
+            JsonObject claims = gson.fromJson(decodedHeaderString, JsonObject.class);
+            List<Visa> controlledAccessGrantsVisas = getVisas(jwtToken, claims.keySet());
+            log.info("Elixir user {} authenticated and provided following valid GA4GH Visas: {}", claims.get(Claims.SUBJECT).getAsString(), controlledAccessGrantsVisas);
+            request.setAttribute(ELIXIR_ID, claims.get(Claims.SUBJECT).getAsString());
             return joinPoint.proceed();
         } catch (Exception e) {
             log.info(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        }
-    }
-
-    private RSAPublicKey readX509PublicKey(File file) throws IOException {
-        try (FileReader keyReader = new FileReader(file)) {
-            PEMParser pemParser = new PEMParser(keyReader);
-            JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-            SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(pemParser.readObject());
-            return (RSAPublicKey) converter.getPublicKey(publicKeyInfo);
         }
     }
 
@@ -149,8 +136,8 @@ public class AAIAspect {
                 : ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, hash));
     }
 
-    protected List<Visa> getVisas(String jwtToken,  Claims claims) {
-        boolean isVisa = claims.containsKey("ga4gh_visa_v1");
+    protected List<Visa> getVisas(String jwtToken, Set<String> claims) {
+        boolean isVisa = claims.contains("ga4gh_visa_v1");
         Collection<Visa> visas = new ArrayList<>();
         if (isVisa) {
             getVisa(jwtToken).ifPresent(visas::add);
