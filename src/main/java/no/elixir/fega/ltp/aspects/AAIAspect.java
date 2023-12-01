@@ -1,7 +1,8 @@
 package no.elixir.fega.ltp.aspects;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import no.elixir.fega.ltp.authentication.CEGACredentialsProvider;
 import no.uio.ifi.clearinghouse.Clearinghouse;
@@ -33,6 +34,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static no.elixir.fega.ltp.aspects.ProcessArgumentsAspect.ELIXIR_ID;
 
 /**
  * AOP aspect that handles authentication and authorization.
@@ -74,10 +77,14 @@ public class AAIAspect {
         }
         String jwtToken = optionalBearerAuth.get().replace("Bearer ", "");
         try {
-            DecodedJWT decodedJWT = JWT.decode(jwtToken);
-            List<Visa> controlledAccessGrantsVisas = getVisas(jwtToken, decodedJWT);
-            log.info("Elixir user {} authenticated and provided following valid GA4GH Visas: {}", decodedJWT.getSubject(), controlledAccessGrantsVisas);
-            request.setAttribute(ProcessArgumentsAspect.ELIXIR_ID, decodedJWT.getSubject());
+            var tokenArray = jwtToken.split("[.]");
+            byte[] decodedHeader = Base64.getUrlDecoder().decode(tokenArray[0]);
+            String decodedHeaderString = new String(decodedHeader);
+            Gson gson = new Gson();
+            JsonObject claims = gson.fromJson(decodedHeaderString, JsonObject.class);
+            List<Visa> controlledAccessGrantsVisas = getVisas(jwtToken, claims.keySet());
+            log.info("Elixir user {} authenticated and provided following valid GA4GH Visas: {}", claims.get(Claims.SUBJECT).getAsString(), controlledAccessGrantsVisas);
+            request.setAttribute(ELIXIR_ID, claims.get(Claims.SUBJECT).getAsString());
             return joinPoint.proceed();
         } catch (Exception e) {
             log.info(e.getMessage(), e);
@@ -127,8 +134,8 @@ public class AAIAspect {
                 : ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, hash));
     }
 
-    protected List<Visa> getVisas(String jwtToken, DecodedJWT decodedJWT) {
-        boolean isVisa = decodedJWT.getClaims().containsKey("ga4gh_visa_v1");
+    protected List<Visa> getVisas(String jwtToken, Set<String> claims) {
+        boolean isVisa = claims.contains("ga4gh_visa_v1");
         Collection<Visa> visas = new ArrayList<>();
         if (isVisa) {
             getVisa(jwtToken).ifPresent(visas::add);
