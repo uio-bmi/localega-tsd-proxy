@@ -1,10 +1,10 @@
-package no.uio.ifi.ltp.aspects;
+package no.elixir.fega.ltp.aspects;
 
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
-import no.uio.ifi.ltp.dto.EncryptedIntegrity;
-import no.uio.ifi.ltp.dto.FileDescriptor;
-import no.uio.ifi.ltp.dto.Operation;
+import no.elixir.fega.ltp.dto.EncryptedIntegrity;
+import no.elixir.fega.ltp.dto.FileDescriptor;
+import no.elixir.fega.ltp.dto.Operation;
 import no.uio.ifi.tc.model.pojo.TSDFileAPIResponse;
 import org.apache.http.entity.ContentType;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Objects;
 import java.util.UUID;
 
-import static no.uio.ifi.ltp.aspects.ProcessArgumentsAspect.*;
+import static no.elixir.fega.ltp.aspects.ProcessArgumentsAspect.*;
 
 /**
  * AOP aspect that publishes MQ messages.
@@ -58,7 +58,7 @@ public class PublishMQAspect {
      * @param result Object returned by the proxied method.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    @AfterReturning(pointcut = "execution(@org.springframework.web.bind.annotation.PatchMapping public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(..))", returning = "result")
+    @AfterReturning(pointcut = "execution(@org.springframework.web.bind.annotation.PatchMapping public * no.elixir.fega.ltp.controllers.rest.ProxyController.stream(..))", returning = "result")
     public void publishUpload(Object result) {
         ResponseEntity genericResponseEntity = (ResponseEntity) result;
         if (!String.valueOf(Objects.requireNonNull(genericResponseEntity).getStatusCode()).startsWith("20")) {
@@ -97,7 +97,7 @@ public class PublishMQAspect {
      * @param result Object returned by the proxied method.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    @AfterReturning(pointcut = "execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.deleteFile(..))", returning = "result")
+    @AfterReturning(pointcut = "execution(public * no.elixir.fega.ltp.controllers.rest.ProxyController.deleteFile(..))", returning = "result")
     public void publishRemove(Object result) {
         ResponseEntity genericResponseEntity = (ResponseEntity) result;
         if (!String.valueOf(Objects.requireNonNull(genericResponseEntity).getStatusCode()).startsWith("20")) {

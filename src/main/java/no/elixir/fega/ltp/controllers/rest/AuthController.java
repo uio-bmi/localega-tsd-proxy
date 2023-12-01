@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.controllers.rest;
+package no.elixir.fega.ltp.controllers.rest;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

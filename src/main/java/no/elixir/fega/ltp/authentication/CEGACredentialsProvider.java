@@ -1,6 +1,6 @@
-package no.uio.ifi.ltp.authentication;
+package no.elixir.fega.ltp.authentication;
 
-import no.uio.ifi.ltp.dto.Credentials;
+import no.elixir.fega.ltp.dto.Credentials;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
