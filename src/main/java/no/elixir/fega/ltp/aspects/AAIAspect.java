@@ -78,7 +78,7 @@ public class AAIAspect {
         String jwtToken = optionalBearerAuth.get().replace("Bearer ", "");
         try {
             var tokenArray = jwtToken.split("[.]");
-            byte[] decodedHeader = Base64.getUrlDecoder().decode(tokenArray[0]);
+            byte[] decodedHeader = Base64.getUrlDecoder().decode(tokenArray[1]);
             String decodedHeaderString = new String(decodedHeader);
             Gson gson = new Gson();
             JsonObject claims = gson.fromJson(decodedHeaderString, JsonObject.class);
