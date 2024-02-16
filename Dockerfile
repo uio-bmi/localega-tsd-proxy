@@ -1,4 +1,4 @@
-FROM maven:3.6.1-jdk-13-alpine as builder
+FROM maven:3.9.2-eclipse-temurin-17-alpine as builder
 
 COPY pom.xml .
 
@@ -13,11 +13,11 @@ COPY src/ /src/
 
 RUN mvn clean install -DskipTests --no-transfer-progress
 
-FROM openjdk:13-alpine
+FROM eclipse-temurin:17-jre-alpine
 
 RUN apk add --no-cache ca-certificates
 
-COPY --from=builder /target/*-SNAPSHOT.jar /localega-tsd-proxy.jar
+COPY --from=builder /target/localega-*.jar /localega-tsd-proxy.jar
 
 RUN addgroup -g 1000 lega && \
     adduser -D -u 1000 -G lega lega

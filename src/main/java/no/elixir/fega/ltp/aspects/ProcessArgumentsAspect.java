@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.aspects;
+package no.elixir.fega.ltp.aspects;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * AOP aspect that processes HTTP request parameters.
@@ -42,7 +42,7 @@ public class ProcessArgumentsAspect {
      * @throws Throwable In case of error.
      */
     @SuppressWarnings("rawtypes")
-    @Around("execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.stream(..)) || execution(public * no.uio.ifi.ltp.controllers.rest.ProxyController.deleteFile(..))")
+    @Around("execution(public * no.elixir.fega.ltp.controllers.rest.ProxyController.stream(..)) || execution(public * no.elixir.fega.ltp.controllers.rest.ProxyController.deleteFile(..))")
     public Object processArguments(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
             Object[] arguments = joinPoint.getArgs();

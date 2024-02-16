@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp.dto;
+package no.elixir.fega.ltp.dto;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;
@@ -21,13 +21,13 @@ public class FileDescriptor {
     private String operation;
 
     @SerializedName("filesize")
-    private long fileSize;
+    private Long fileSize;
 
     @SerializedName("oldpath")
     private String oldPath;
 
     @SerializedName("file_last_modified")
-    private long fileLastModified;
+    private Long fileLastModified;
 
     @SerializedName("content")
     private String content;

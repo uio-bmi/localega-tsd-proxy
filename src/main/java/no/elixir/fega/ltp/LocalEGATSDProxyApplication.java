@@ -1,4 +1,4 @@
-package no.uio.ifi.ltp;
+package no.elixir.fega.ltp;
 
 import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.tc.TSDFileAPIClient;
@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
@@ -19,9 +19,11 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.web.PortMapperImpl;
 import org.springframework.security.web.PortResolverImpl;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -42,14 +44,15 @@ import java.util.*;
 @Slf4j
 @EnableCaching
 @SpringBootApplication
-public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
+@EnableWebSecurity
+public class LocalEGATSDProxyApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(LocalEGATSDProxyApplication.class, args);
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         PortMapperImpl portMapper = new PortMapperImpl();
         portMapper.setPortMappings(Collections.singletonMap("8080", "8080"));
         PortResolverImpl portResolver = new PortResolverImpl();
@@ -57,23 +60,19 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
         LoginUrlAuthenticationEntryPoint entryPoint = new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/elixir-aai");
         entryPoint.setPortMapper(portMapper);
         entryPoint.setPortResolver(portResolver);
-        http
-                .requiresChannel()
-                .anyRequest().requiresSecure()
-                .and()
-                .exceptionHandling()
-                .authenticationEntryPoint(entryPoint)
-                .and()
-                .csrf().disable()
-                .authorizeRequests()
-                .mvcMatchers("/token.html").authenticated()
-                .mvcMatchers("/token").authenticated()
-                .mvcMatchers("/user").authenticated()
-                .and()
-                .oauth2Login()
-                .redirectionEndpoint().baseUri("/oidc-protected")
-                .and()
-                .defaultSuccessUrl("/");
+        http.
+                requiresChannel(channel -> channel.anyRequest().requiresSecure())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(entryPoint))
+                .csrf(AbstractHttpConfigurer::disable)
+                .securityMatcher("/token.html", "/token", "/user", "/oauth2/authorization/elixir-aai", "/oidc-protected")
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers("/token.html").authenticated()
+                        .requestMatchers("/token").authenticated()
+                        .requestMatchers("/user").authenticated())
+                .oauth2Login(auth -> auth.redirectionEndpoint(endpoint -> endpoint.baseUri("/oidc-protected"))
+                        .defaultSuccessUrl("/"));
+
+        return http.build();
     }
 
     @Bean
@@ -84,9 +83,9 @@ public class LocalEGATSDProxyApplication extends WebSecurityConfigurerAdapter {
                 ClientRegistration.withRegistrationId("elixir-aai")
                         .clientId(elixirAAIClientId)
                         .clientSecret(elixirAAIClientSecret)
-                        .clientAuthenticationMethod(ClientAuthenticationMethod.BASIC)
+                        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                         .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                        .redirectUriTemplate("{baseUrl}/oidc-protected")
+                        .redirectUri("{baseUrl}/oidc-protected")
                         .scope("openid", "ga4gh_passport_v1")
                         .authorizationUri("https://login.elixir-czech.org/oidc/authorize")
                         .tokenUri("https://login.elixir-czech.org/oidc/token")
