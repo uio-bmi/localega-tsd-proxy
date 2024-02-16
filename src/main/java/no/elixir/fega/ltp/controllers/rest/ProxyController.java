@@ -158,4 +158,16 @@ public class ProxyController {
         return bearerAuthorization.replace("Bearer ", "");
     }
 
+    /**
+     * Gets TSD token.
+     *
+     * @param bearerAuthorization Elixir AAI token.
+     * @return TSD token.
+     */
+    @GetMapping("/gettoken")
+    public ResponseEntity<?> getToken(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization) {
+        Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
+        return ResponseEntity.ok(token);
+    }
+
 }
