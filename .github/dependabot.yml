@@ -16,5 +16,5 @@ updates:
   registries: "*"
   schedule:
     interval: daily
-    time: "04:00"
+    time: "14:19"
   open-pull-requests-limit: 10
