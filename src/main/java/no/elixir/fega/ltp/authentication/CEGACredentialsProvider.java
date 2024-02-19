@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Base64;
@@ -45,7 +46,7 @@ public class CEGACredentialsProvider {
      */
     @Cacheable("cega-credentials")
     public Credentials getCredentials(String username) throws MalformedURLException, URISyntaxException {
-        URL url = new URL(String.format(cegaAuthURL + "%s?idType=username", username));
+        URL url = new URI(String.format(cegaAuthURL + "%s?idType=username", username)).toURL();
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((cegaUsername + ":" + cegaPassword).getBytes()));
         ResponseEntity<Credentials> response = restTemplate.exchange(url.toURI(), HttpMethod.GET,

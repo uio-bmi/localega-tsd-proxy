@@ -60,7 +60,7 @@ public class ProxyController {
         byte[] chunkBytes = inputStream.readAllBytes();
 
         // new upload
-        if (StringUtils.isEmpty(uploadId)) {
+        if (!StringUtils.hasLength(uploadId)) {
             Chunk response = tsdFileAPIClient.initializeResumableUpload(token.getToken(), tsdAppId, chunkBytes, fileName);
             return validateChunkChecksum(token, response, md5);
         }
@@ -133,7 +133,7 @@ public class ProxyController {
     public ResponseEntity<?> getResumables(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization,
                                            @RequestParam(value = "uploadId", required = false) String uploadId) {
         Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
-        if (StringUtils.isEmpty(uploadId)) {
+        if (!StringUtils.hasLength(uploadId)) {
             return ResponseEntity.ok(tsdFileAPIClient.listResumableUploads(token.getToken(), tsdAppId));
         } else {
             return ResponseEntity.ok(tsdFileAPIClient.getResumableUpload(token.getToken(), tsdAppId, uploadId));
@@ -156,6 +156,18 @@ public class ProxyController {
 
     protected String getElixirAAIToken(String bearerAuthorization) {
         return bearerAuthorization.replace("Bearer ", "");
+    }
+
+    /**
+     * Gets TSD token.
+     *
+     * @param bearerAuthorization Elixir AAI token.
+     * @return TSD token.
+     */
+    @GetMapping("/gettoken")
+    public ResponseEntity<?> getToken(@RequestHeader(HttpHeaders.PROXY_AUTHORIZATION) String bearerAuthorization) {
+        Token token = tsdFileAPIClient.getToken(TOKEN_TYPE, TOKEN_TYPE, getElixirAAIToken(bearerAuthorization));
+        return ResponseEntity.ok(token);
     }
 
 }
