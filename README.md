@@ -1,3 +1,8 @@
+# Notice:
+# The work in this repo is continued in a new mono repo here: https://github.com/ELIXIR-NO/FEGA-Norway
+
+# Direct link inside mono repo: https://github.com/ELIXIR-NO/FEGA-Norway/tree/main/services/localega-tsd-proxy
+
 # LocalEGA-TSD-proxy
 
 ## TSD File API documentation
